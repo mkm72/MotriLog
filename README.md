@@ -2,20 +2,19 @@
 
 Before you begin, ensure you have the following installed on your system:
 
-Python 3.8+
+#### Python 3.8+
 
-Docker and Docker Compose (for running the database)
+#### Docker and Docker Compose (for running the database)
 
-Installation
+## Installation
 
-Clone the repository (if applicable):
+Clone the repository:
 ```
 git clone https://github.com/mkm72/Motari.git
 cd motari
 ```
 
-Set up a Virtual Environment (Recommended):
-It is best practice to run Python projects in a virtual environment to isolate dependencies.
+Set up a Virtual Environment:
 
 # Create virtual environment
 ```
