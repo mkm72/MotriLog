@@ -8,7 +8,7 @@ web_bp = Blueprint('web_bp', __name__)
 @web_bp.route('/')
 @web_bp.route('/dashboard')
 def dashboard():
-    return render_template('dashboard.html')
+    return render_template('Dashboard.html')
 
 @web_bp.route('/login')
 def login():
@@ -16,12 +16,12 @@ def login():
 
 @web_bp.route('/register')
 def register():
-    return render_template('register.html')
+    return render_template('Register.html')
 
 @web_bp.route('/vehicle-details')
 def vehicle_details():
-    return render_template('vehicle-details.html')
+    return render_template('Vehicle-Details.html')
 
 @web_bp.route('/workshops')
 def workshops():
-    return render_template('workshops.html')
+    return render_template('Workshops.html')
