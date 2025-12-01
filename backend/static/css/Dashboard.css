@@ -21,7 +21,7 @@ body.dashboard-page {
 
 /* Background Image */
 .bg-image {
-    background: url(dashboard.jpg) center/cover no-repeat;
+    background: url("/static/img/dashboard.jpg") center/cover no-repeat;
     filter: blur(3px) brightness(0.45);
     position: fixed;
     inset: 0;
