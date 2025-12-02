@@ -44,7 +44,7 @@ async function fetch_and_display_vehicles() {
     container.querySelectorAll(".view-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
-        window.location.href = `vehicledetails.html?id=${id}`;
+        window.location.href = `vehicledetails?id=${id}`;
       });
     });
 

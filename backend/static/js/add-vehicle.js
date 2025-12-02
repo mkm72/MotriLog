@@ -47,7 +47,7 @@ async function handle_add_vehicle_submit(event) {
       return;
     }
 
-    window.location.href = "dashboard.html";
+    window.location.href = "dashboard";
 
   } catch (err) {
     console.error(err);

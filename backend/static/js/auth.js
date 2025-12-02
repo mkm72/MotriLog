@@ -41,7 +41,7 @@ async function handle_login_submit(event) {
     }
 
     // Session cookie is now set by backend
-    window.location.href = "dashboard.html";
+    window.location.href = "dashboard";
   } catch (err) {
     console.error("Login error:", err);
     if (errorEl) {
@@ -105,7 +105,7 @@ async function handle_register_submit(event) {
     }
 
     // after register, redirect to login
-    window.location.href = "login.html";
+    window.location.href = "login";
   } catch (err) {
     console.error("Register error:", err);
     errorEl.textContent = "Network error. Please try again.";
@@ -122,7 +122,7 @@ async function logout() {
   } catch (e) {
     console.warn("Logout request failed (ignored)", e);
   }
-  window.location.href = "login.html";
+  window.location.href = "login";
 }
 
 // Wire up events on pages that include this file
