@@ -2,6 +2,8 @@ from flask import Blueprint, request, jsonify, session
 import bcrypt
 from marshmallow import ValidationError
 from datetime import datetime
+from bson.objectid import ObjectId
+from marshmallow.fields import Method
 from backend.models import db, user_schema
 
 # Create the Blueprint
@@ -93,3 +95,71 @@ def login_user():
 def logout_user():
     session.clear()
     return jsonify({"message": "Logged out successfully"}), 200
+
+
+
+
+
+# ---------------------------------------------------------
+# Route: Get User Profile
+# ---------------------------------------------------------
+
+@auth_bp.route('/profile', methods=['GET'])
+def get_profile():
+    # 1. Check Authentication
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # 2. Retrieve User
+    try:
+        user = db.users.find_one({"_id": ObjectId(user_id)})
+        if not user:
+            return jsonify({"error": "User not found"}), 404
+        
+        # 3. Return Data (Schema handles hiding password_hash)
+        return jsonify(user_schema.dump(user)), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
+
+
+
+
+# ---------------------------------------------------------
+# Route: Update User Profile
+# ---------------------------------------------------------
+@auth_bp.route('/profile', methods=['PUT'])
+def update_profile():
+    # 1. Check Authentication
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    # 2. Get Input Data
+    data = request.get_json()
+    if not data:
+        return jsonify({"error": "No input data"}), 400
+
+    # 3. Filter Allowed Fields
+    # Security: Only allow updating specific fields. 
+    # Prevent changing 'role', 'email', or 'password' here.
+    allowed_fields = ['full_name', 'phone_number', 'telegram_chat_id']
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+    if not update_data:
+        return jsonify({"error": "No valid fields to update"}), 400
+
+    # 4. Update Database
+    try:
+        db.users.update_one(
+            {"_id": ObjectId(user_id)},
+            {"$set": update_data}
+        )
+
+        # 5. Return Updated Profile
+        updated_user = db.users.find_one({"_id": ObjectId(user_id)})
+        return jsonify(user_schema.dump(updated_user)), 200
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
