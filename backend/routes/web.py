@@ -28,7 +28,6 @@ def vehicle_details():
 def workshops():
     return render_template('workshop.html')
 
-@web_bp.route('/add-vehicle')
-
+@web_bp.route('/addvehicle')
 def add_vehicle():
     return render_template('/addvehicle.html')
