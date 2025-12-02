@@ -10,7 +10,7 @@ def main_page():
     return render_template("Main_Page.html")
 @web_bp.route('/dashboard')
 def dashboard():
-    return render_template('Dashboard.html')
+    return render_template('dashboard.html')
 
 @web_bp.route('/login')
 def login():
@@ -18,12 +18,17 @@ def login():
 
 @web_bp.route('/register')
 def register():
-    return render_template('Register.html')
+    return render_template('register.html')
 
 @web_bp.route('/vehicle-details')
 def vehicle_details():
-    return render_template('Vehicle_Details.html')
+    return render_template('vehicledetails.html')
 
 @web_bp.route('/workshops')
 def workshops():
-    return render_template('Workshop.html')
+    return render_template('workshop.html')
+
+@web_bp.route('/add-vehicle')
+
+def add_vehicle():
+    return render_template('/addvehicle.html')
