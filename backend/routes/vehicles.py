@@ -214,3 +214,62 @@ def delete_vehicle(vehicle_id):
     
     except Exception:
         return jsonify({'error': 'Invalid vehicle ID'}), 400
+
+
+
+
+# ---------------------------------------------------------
+# Update General Vehicle Info
+# ---------------------------------------------------------
+@vehicles_bp.route('/vehicles/<string:vehicle_id>', methods=['PUT'])
+def update_vehicle(vehicle_id):
+    # 1. Check Authentication
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # 2. Get Input Data
+    data = request.get_json()
+    if not data:
+        return jsonify({'error': 'No input data provided'}), 400
+
+    # 3. Filter Allowed Fields
+    allowed_fields = ['manufacturer', 'model', 'year', 'color', 'license_plate', 'vin', 'purchase_date', 'initial_mileage']
+    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+
+    if not update_data:
+        return jsonify({'error': 'No valid fields to update'}), 400
+
+    try:
+        # 4. Validate Data using Schema 
+        vehicle_schema.load(update_data, partial=True)
+
+        # 5. Verify Ownership
+        vehicle = db.vehicles.find_one({
+            '_id': ObjectId(vehicle_id),
+            'user_id': ObjectId(user_id)
+        })
+
+        if not vehicle:
+            return jsonify({'error': 'Vehicle not found'}), 404
+
+        # 6. Check License Plate Uniqueness
+        if 'license_plate' in update_data and update_data['license_plate'] != vehicle['license_plate']:
+            existing = db.vehicles.find_one({'license_plate': update_data['license_plate']})
+            if existing:
+                return jsonify({'error': 'License plate already registered'}), 409
+
+        # 7. Update Database
+        db.vehicles.update_one(
+            {'_id': ObjectId(vehicle_id)},
+            {'$set': update_data}
+        )
+
+        # 8. Return Updated Vehicle
+        updated_vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id)})
+        return jsonify(vehicle_schema.dump(updated_vehicle)), 200
+
+    except ValidationError as err:
+        return jsonify(err.messages), 400
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
