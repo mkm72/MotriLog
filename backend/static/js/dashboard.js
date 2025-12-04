@@ -1,6 +1,6 @@
 console.log("DASHBOARD.JS LOADED!");
 
-const API_BASE_URL = "http://127.0.0.1:5000";
+// ❗ Ensure API_BASE_URL is loaded from auth.js, NOT here
 
 async function fetch_and_display_vehicles() {
   const container = document.getElementById("vehicles-list");
@@ -16,7 +16,9 @@ async function fetch_and_display_vehicles() {
     });
 
     if (!response.ok) {
-      throw new Error("Failed to load vehicles");
+      console.error("Failed to load vehicles");
+      container.innerHTML = "<p class='no-vehicles'>No vehicles found.</p>";
+      return;
     }
 
     const vehicles = await response.json();
@@ -30,21 +32,25 @@ async function fetch_and_display_vehicles() {
     vehicles.forEach(v => {
       const card = document.createElement("div");
       card.className = "vehicle-card";
+
       card.innerHTML = `
-        <img src="../static/img/car-interior.jpg" alt="Vehicle">
+        <img src="/static/img/car-interior.jpg" alt="Vehicle">
         <div class="vehicle-info">
           <h3>${v.manufacturer} ${v.model}</h3>
-          <p>${v.license_plate || ""}</p>
+          <p>Plate: ${v.license_plate || ""}</p>
+          <p>Color: ${v.color || "-"}</p>
+          <p>Mileage: ${v.current_mileage || 0}</p>
         </div>
-        <button class="view-btn" data-id="${v.id}">View Details</button>
+        <button class="view-btn" data-id="${v._id}">View Details</button>
       `;
+
       container.appendChild(card);
     });
 
-    container.querySelectorAll(".view-btn").forEach(btn => {
+    document.querySelectorAll(".view-btn").forEach(btn => {
       btn.addEventListener("click", () => {
         const id = btn.getAttribute("data-id");
-        window.location.href = `vehicledetails?id=${id}`;
+        window.location.href = `/vehicle-details?id=${id}`;
       });
     });
 
@@ -54,6 +60,4 @@ async function fetch_and_display_vehicles() {
   }
 }
 
-document.addEventListener("DOMContentLoaded", () => {
-  fetch_and_display_vehicles();
-});
+document.addEventListener("DOMContentLoaded", fetch_and_display_vehicles);
