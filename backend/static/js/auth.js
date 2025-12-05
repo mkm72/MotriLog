@@ -70,6 +70,23 @@ async function handle_register_submit(event) {
   errorEl.textContent = "";
 
   // Validations
+  const nameRegex = /[0-9]/;
+  if (nameRegex.test(firstNameInput.value) || nameRegex.test(lastNameInput.value)) {
+    errorEl.textContent = "First or Last Name cannot contain numbers.";
+    errorEl.hidden = false;
+    hasError = true;
+  }
+
+  if (passwordInput.value.length < 8) {
+    errorEl.textContent = "Password must be at least 8 characters long.";
+    errorEl.hidden = false;
+    hasError = true;
+  }
+    
+  if (hasError) {
+      return;
+  }
+  
   if (passwordInput.value !== confirmPasswordInput.value) {
     errorEl.textContent = "Passwords do not match.";
     errorEl.hidden = false;
@@ -98,15 +115,19 @@ async function handle_register_submit(event) {
     });
 
     const data = await response.json().catch(() => ({}));
+if (!response.ok) {
+        let msg = data.message || data.detail || "Registration failed.";
+      
+        if (msg.includes("Email already exists") || msg.includes("already registered")) {
+            msg = "This email address is already registered. Please login.";
+        } else if (msg.includes("passwords do not match")) {
+            msg = "The passwords you entered do not match.";
+        }
 
-    if (!response.ok) {
-      const msg = data.message || data.detail || "Registration failed.";
-      errorEl.textContent = msg;
-      errorEl.hidden = false;
-      return;
-    }
-
-    // Redirect after success
+        errorEl.textContent = msg;
+        errorEl.hidden = false;
+        return;
+ 
     window.location.href = "/login";
 
   } catch (err) {
