@@ -127,7 +127,7 @@ if (!response.ok) {
         errorEl.textContent = msg;
         errorEl.hidden = false;
         return;
- 
+}
     window.location.href = "/login";
 
   } catch (err) {
