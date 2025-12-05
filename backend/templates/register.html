@@ -1,114 +1,86 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>MotriLog – Register</title>
-    <link
-      rel="stylesheet"
-      href="{{ url_for('static', filename='css/register.css') }}"
-    />
-  </head>
 
-  <body class="register-page">
-    <div class="register-container">
-      <div class="register-left">
-        <div class="brand-logo">MotriLog</div>
-      </div>
+<head>
+  <meta charset="UTF-8" />
+  <title>MotriLog – Register</title>
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/register.css') }}" />
+</head>
 
-      <div class="register-right">
-        <div class="register-card">
-          <h1 class="title">Create Your Account</h1>
-
-          <form id="register-form" class="form-grid">
-            <div class="form-group">
-              <label class="input-label" for="first-name">First Name</label>
-              <input
-                type="text"
-                id="first-name"
-                name="first_name"
-                placeholder="Ahmed"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="input-label" for="last-name">Last Name</label>
-              <input
-                type="text"
-                id="last-name"
-                name="last_name"
-                placeholder="Almutairi"
-                required
-              />
-            </div>
-
-            <div class="form-group full">
-              <label class="input-label" for="reg-email">Email Address</label>
-              <input
-                type="email"
-                id="reg-email"
-                name="email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-            <div class="form-group full">
-              <label class="input-label" for="reg-phone">Phone Number (Optional)</label>
-              <input
-                type="tel"
-                id="reg-phone"
-                name="phone"
-                placeholder="+966 5x xxx xxxx"
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="input-label" for="reg-password">Password</label>
-              <input
-                type="password"
-                id="reg-password"
-                name="password"
-                placeholder="Create a password"
-                required
-              />
-            </div>
-
-            <div class="form-group">
-              <label class="input-label" for="reg-password-confirm"
-                >Confirm Password</label
-              >
-              <input
-                type="password"
-                id="reg-password-confirm"
-                name="password_confirm"
-                placeholder="Re-enter password"
-                required
-              />
-            </div>
-
-            <div class="form-group full terms">
-              <label>
-                <input type="checkbox" id="terms" required />
-                <span>I agree to the Terms of Service and Privacy Policy.</span>
-              </label>
-            </div>
-
-            <p id="register-error" class="error-text full" hidden></p>
-
-            <button type="submit" class="btn-primary full">
-              CREATE ACCOUNT
-            </button>
-          </form>
-
-          <p class="login-text">
-            Already have an account?
-            <a href="login">Login</a>
-          </p>
-        </div>
-      </div>
+<body class="register-page">
+  <div class="register-container">
+    <div class="register-left">
+      <div class="brand-logo">MotriLog</div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
-  </body>
+    <div class="register-right">
+      <div class="register-card">
+        <h1 class="title">Create Your Account</h1>
+
+        <form id="register-form" class="form-grid">
+          <div class="form-group">
+            <label class="input-label" for="first-name">First Name</label>
+            <input type="text" id="first-name" name="first_name" placeholder="Ahmed" required />
+            <p id="first-name-error" class="error-text" hidden>Name cannot contain numbers.</p>
+          </div>
+
+          <div class="form-group">
+            <label class="input-label" for="last-name">Last Name</label>
+            <input type="text" id="last-name" name="last_name" placeholder="Almutairi" required />
+            <p id="last-name-error" class="error-text" hidden>Name cannot contain numbers.</p>
+          </div>
+
+          <div class="form-group full">
+            <label class="input-label" for="reg-email">Email Address</label>
+            <input type="email" id="reg-email" name="email" placeholder="you@example.com" required />
+          </div>
+
+          <div class="form-group full">
+            <label class="input-label" for="reg-phone">Phone Number (Optional)</label>
+            <input type="tel" id="reg-phone" name="phone" placeholder="+966 5x xxx xxxx" />
+          </div>
+
+          <div class="form-group">
+            <label class="input-label" for="reg-password">Password</label>
+            <div class="password-container">
+              <input type="password" id="reg-password" name="password" placeholder="Create a password (Min 8 chars)"
+                required />
+              <span class="password-toggle" id="toggle-password">👁️</span>
+            </div>
+            <p id="password-length-error" class="error-text" hidden>Password must be at least 8 characters long.</p>
+          </div>
+          <div class="form-group">
+            <label class="input-label" for="reg-password-confirm">Confirm Password</label>
+            <div class="password-container">
+              <input type="password" id="reg-password-confirm" name="password_confirm" placeholder="Re-enter password"
+                required />
+              <span class="password-toggle" id="toggle-confirm-password">👁️</span>
+            </div>
+            <p id="password-match-error" class="error-text" hidden>Passwords do not match.</p>
+          </div>
+          <div class="form-group full terms">
+            <label>
+              <input type="checkbox" id="terms" required />
+              <span>I agree to the Terms of Service and Privacy Policy.</span>
+            </label>
+          </div>
+
+          <p id="register-error" class="error-text full" hidden></p>
+
+          <button type="submit" class="btn-primary full">
+            CREATE ACCOUNT
+          </button>
+        </form>
+
+        <p class="login-text">
+          Already have an account?
+          <a href="login">Login</a>
+        </p>
+      </div>
+    </div>
+  </div>
+
+  <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+</body>
+
 </html>
