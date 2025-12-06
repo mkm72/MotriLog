@@ -33,6 +33,29 @@ body.dashboard-page {
 .brand-logo {
     font-size: 26px;
     font-weight: 700;
+    cursor: pointer;
+}
+
+/* header buttons wrapper */
+.header-buttons {
+    display: flex;
+    gap: 12px;
+}
+
+/* workshops button */
+.btn-workshops {
+    padding: 10px 18px;
+    background: #4A4A4A;
+    color: white;
+    border-radius: 20px;
+    font-size: 14px;
+    font-weight: 600;
+    text-decoration: none;
+    transition: 0.2s;
+}
+
+.btn-workshops:hover {
+    opacity: 0.85;
 }
 
 .btn-ghost {

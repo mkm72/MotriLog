@@ -10,15 +10,26 @@
     <div class="bg-image"></div>
 
     <header class="app-header">
-      <div class="brand-logo">MotriLog</div>
-      <button id="logout-btn" class="btn-ghost">Logout</button>
+      <div
+        class="brand-logo"
+        onclick="window.location.href='/'"
+        style="cursor: pointer"
+      >
+        MotriLog
+      </div>
+
+      <div class="header-buttons">
+        <a href="/workshops" class="btn-workshops">🔧 Workshops</a>
+        <button id="logout-btn" class="btn-ghost">Logout</button>
+      </div>
     </header>
 
     <main class="content">
       <section class="dashboard-card">
         <div class="card-header">
           <h1 class="title">My Vehicles</h1>
-          <a href="addvehicle" class="btn-primary-pill">+ Add Vehicle</a>
+
+          <a href="addvehicle" class="btn-primary-pill"> + Add Vehicle </a>
         </div>
 
         <div id="vehicles-list" class="vehicles-grid"></div>
