@@ -1,240 +1,206 @@
 <!DOCTYPE html>
-<html lang="en" dir="ltr">   <head>
+<html lang="en" dir="ltr">
+  <head>
     <meta charset="UTF-8" />
     <title>MotriLog – Register</title>
+
     <link
       rel="stylesheet"
       href="{{ url_for('static', filename='css/register.css') }}"
     />
-    <style>
-     
-.form-group.terms {
-   
-    display: flex;
-    align-items: flex-start;  
-    margin-bottom: 20px; 
-}
-
-.form-group.terms label {
-    display: flex; 
-    align-items: center; 
-    cursor: pointer;
-    font-weight: normal; 
-    line-height: 1.4; 
-}
-
-.form-group.terms input[type="checkbox"] {
-    margin-right: 10px; 
-    width: 16px; 
-    height: 16px;
- 
-    flex-shrink: 0; 
-}
-        .password-container {
-            position: relative;
-        }
-        .password-toggle {
-            position: absolute;
-            top: 50%;
-            right: 10px; 
-            transform: translateY(-50%);
-            cursor: pointer;
-            color: #888;
-        }
-        .error-message {
-            color: red;
-            font-size: 0.9em;
-            margin-top: 5px;
-        }
-        .form-grid .full {
-            grid-column: 1 / -1; 
-        }
-    </style>
   </head>
 
   <body class="register-page">
-    <div class="register-container">
-      <div class="register-left">
-        <div class="brand-logo">MotriLog</div>
-      </div>
+    <!-- TEXT LOGO TOP-LEFT -->
+    <a href="/" class="text-logo">MotriLog</a>
 
-      <div class="register-right">
-        <div class="register-card">
-          <h1 class="title">Create Your Account</h1>
+    <!-- REGISTER CARD -->
+    <div class="register-card">
+      <h1 class="title">Create Your Account</h1>
 
-          <form id="register-form" class="form-grid">
-            
-                        <div class="form-group">
-              <label class="input-label" for="first-name">First Name</label>
-              <input
-                type="text"
-                id="first-name"
-                name="first_name"
-                placeholder="e.g., Ahmed"
-                required
-              />
-              <p id="first-name-error" class="error-message" hidden>Name cannot contain numbers.</p>
-            </div>
-
-                        <div class="form-group">
-              <label class="input-label" for="last-name">Last Name</label>
-              <input
-                type="text"
-                id="last-name"
-                name="last_name"
-                placeholder="e.g., Almutairi"
-                required
-              />
-              <p id="last-name-error" class="error-message" hidden>Name cannot contain numbers.</p>
-            </div>
-
-                        <div class="form-group full">
-              <label class="input-label" for="reg-email">Email Address</label>
-              <input
-                type="email"
-                id="reg-email"
-                name="email"
-                placeholder="you@example.com"
-                required
-              />
-            </div>
-
-                        <div class="form-group full">
-              <label class="input-label" for="reg-phone">Phone Number (Optional)</label>
-              <input
-                type="tel"
-                id="reg-phone"
-                name="phone"
-                placeholder="+966 5x xxx xxxx"
-              />
-            </div>
-
-                        <div class="form-group">
-              <label class="input-label" for="reg-password">Password</label>
-              <div class="password-container">
-                <input
-                  type="password"
-                  id="reg-password"
-                  name="password"
-                  placeholder="Create a password (Min 8 chars)"
-                  required
-                />
-                <span class="password-toggle" id="toggle-password">👁️</span> </div>
-              <p id="password-error" class="error-message" hidden>Password must be at least 8 characters long.</p>
-            </div>
-
-                        <div class="form-group">
-              <label class="input-label" for="reg-password-confirm"
-                >Confirm Password</label
-              >
-              <div class="password-container">
-                <input
-                  type="password"
-                  id="reg-password-confirm"
-                  name="password_confirm"
-                  placeholder="Re-enter password"
-                  required
-                />
-                <span class="password-toggle" id="toggle-confirm-password">👁️</span> </div>
-              <p id="confirm-password-error" class="error-message" hidden>Passwords do not match.</p>
-            </div>
-
-                        <div class="form-group full terms">
-              <label>
-                <input type="checkbox" id="terms" required />
-                <span>I agree to the Terms of Service and Privacy Policy.</span>
-              </label>
-            </div>
-
-                        <p id="register-error" class="error-text full" hidden></p>
-
-            <button type="submit" class="btn-primary full">
-              CREATE ACCOUNT
-            </button>
-          </form>
-
-          <p class="login-text">
-            Already have an account?
-            <a href="login">Login</a>
+      <form id="register-form" class="form-grid">
+        <div class="form-group">
+          <label class="input-label" for="first-name">First Name</label>
+          <input
+            type="text"
+            id="first-name"
+            name="first_name"
+            placeholder="e.g., Ahmed"
+            required
+          />
+          <p id="first-name-error" class="error-message" hidden>
+            Name cannot contain numbers.
           </p>
         </div>
-      </div>
+
+        <div class="form-group">
+          <label class="input-label" for="last-name">Last Name</label>
+          <input
+            type="text"
+            id="last-name"
+            name="last_name"
+            placeholder="e.g., Almutairi"
+            required
+          />
+          <p id="last-name-error" class="error-message" hidden>
+            Name cannot contain numbers.
+          </p>
+        </div>
+
+        <div class="form-group full">
+          <label class="input-label" for="reg-email">Email Address</label>
+          <input
+            type="email"
+            id="reg-email"
+            name="email"
+            placeholder="you@example.com"
+            required
+          />
+        </div>
+
+        <div class="form-group full">
+          <label class="input-label" for="reg-phone"
+            >Phone Number (Optional)</label
+          >
+          <input
+            type="tel"
+            id="reg-phone"
+            name="phone"
+            placeholder="+966 5x xxx xxxx"
+          />
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="reg-password">Password</label>
+          <div class="password-container">
+            <input
+              type="password"
+              id="reg-password"
+              name="password"
+              placeholder="Create a password (Min 8 chars)"
+              required
+            />
+            <span class="password-toggle" id="toggle-password">👁️</span>
+          </div>
+          <p id="password-error" class="error-message" hidden>
+            Password must be at least 8 characters long.
+          </p>
+        </div>
+
+        <div class="form-group">
+          <label class="input-label" for="reg-password-confirm"
+            >Confirm Password</label
+          >
+          <div class="password-container">
+            <input
+              type="password"
+              id="reg-password-confirm"
+              name="password_confirm"
+              placeholder="Re-enter password"
+              required
+            />
+            <span class="password-toggle" id="toggle-confirm-password">👁️</span>
+          </div>
+          <p id="confirm-password-error" class="error-message" hidden>
+            Passwords do not match.
+          </p>
+        </div>
+
+        <div class="form-group full terms">
+          <label>
+            <input type="checkbox" id="terms" required />
+            <span>I agree to the Terms of Service and Privacy Policy.</span>
+          </label>
+        </div>
+
+        <p id="register-error" class="error-text full" hidden></p>
+
+        <button type="submit" class="btn-primary full">CREATE ACCOUNT</button>
+      </form>
+
+      <p class="login-text">
+        Already have an account?
+        <a href="login">Login</a>
+      </p>
     </div>
 
-        <script>
-        
-        function setupPasswordToggle(inputId, toggleId) {
-            const passwordInput = document.getElementById(inputId);
-            const toggleIcon = document.getElementById(toggleId);
+    <script>
+      function setupPasswordToggle(inputId, toggleId) {
+        const passwordInput = document.getElementById(inputId);
+        const toggleIcon = document.getElementById(toggleId);
 
-            toggleIcon.addEventListener('click', function () {
-                const type = passwordInput.getAttribute('type') === 'password' ? 'text' : 'password';
-                passwordInput.setAttribute('type', type);
-                this.textContent = (type === 'password' ? '👁️' : '🔒');
-            });
-        }
-
-         
-        setupPasswordToggle('reg-password', 'toggle-password');
-        setupPasswordToggle('reg-password-confirm', 'toggle-confirm-password');
-
- 
-        function checkNameForNumbers(inputId, errorId) {
-            const input = document.getElementById(inputId);
-            const error = document.getElementById(errorId);
-            const nameRegex = /^\D*$/;  
-
-            input.addEventListener('input', function() {
-                if (!nameRegex.test(this.value)) {
-                    error.removeAttribute('hidden');
-                    this.setCustomValidity('Name cannot contain numbers.');
-                } else {
-                    error.setAttribute('hidden', '');
-                    this.setCustomValidity('');  
-                }
-            });
-        }
-
-        checkNameForNumbers('first-name', 'first-name-error');
-        checkNameForNumbers('last-name', 'last-name-error');
-
-
-        document.getElementById('register-form').addEventListener('submit', function(event) {
-            const password = document.getElementById('reg-password');
-            const confirmPassword = document.getElementById('reg-password-confirm');
-            const passwordError = document.getElementById('password-error');
-            const confirmError = document.getElementById('confirm-password-error');
-            const generalError = document.getElementById('register-error');
-
-            let isValid = true;
-
-            if (password.value.length < 8) {
-                passwordError.removeAttribute('hidden');
-                password.focus();
-                isValid = false;
-            } else {
-                passwordError.setAttribute('hidden', '');
-            }
-
-            if (password.value !== confirmPassword.value) {
-                confirmError.removeAttribute('hidden');
-                confirmPassword.focus();
-                isValid = false;
-            } else {
-                confirmError.setAttribute('hidden', '');
-            }
-
-            if (!isValid) {
-                event.preventDefault(); 
-                generalError.textContent = 'Please fix the errors shown above.';
-                generalError.removeAttribute('hidden');
-            } else {
-                generalError.setAttribute('hidden', '');
-                 
-            }
+        toggleIcon.addEventListener("click", function () {
+          const type =
+            passwordInput.getAttribute("type") === "password"
+              ? "text"
+              : "password";
+          passwordInput.setAttribute("type", type);
+          this.textContent = type === "password" ? "👁️" : "🔒";
         });
+      }
 
-         
+      setupPasswordToggle("reg-password", "toggle-password");
+      setupPasswordToggle("reg-password-confirm", "toggle-confirm-password");
+
+      function checkNameForNumbers(inputId, errorId) {
+        const input = document.getElementById(inputId);
+        const error = document.getElementById(errorId);
+        const nameRegex = /^\D*$/;
+
+        input.addEventListener("input", function () {
+          if (!nameRegex.test(this.value)) {
+            error.removeAttribute("hidden");
+            this.setCustomValidity("Name cannot contain numbers.");
+          } else {
+            error.setAttribute("hidden", "");
+            this.setCustomValidity("");
+          }
+        });
+      }
+
+      checkNameForNumbers("first-name", "first-name-error");
+      checkNameForNumbers("last-name", "last-name-error");
+
+      document
+        .getElementById("register-form")
+        .addEventListener("submit", function (event) {
+          const password = document.getElementById("reg-password");
+          const confirmPassword = document.getElementById(
+            "reg-password-confirm"
+          );
+
+          const passwordError = document.getElementById("password-error");
+          const confirmError = document.getElementById(
+            "confirm-password-error"
+          );
+          const generalError = document.getElementById("register-error");
+
+          let isValid = true;
+
+          if (password.value.length < 8) {
+            passwordError.removeAttribute("hidden");
+            password.focus();
+            isValid = false;
+          } else {
+            passwordError.setAttribute("hidden", "");
+          }
+
+          if (password.value !== confirmPassword.value) {
+            confirmError.removeAttribute("hidden");
+            confirmPassword.focus();
+            isValid = false;
+          } else {
+            confirmError.setAttribute("hidden", "");
+          }
+
+          if (!isValid) {
+            event.preventDefault();
+            generalError.textContent = "Please fix the errors shown above.";
+            generalError.removeAttribute("hidden");
+          } else {
+            generalError.setAttribute("hidden", "");
+          }
+        });
     </script>
 
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
