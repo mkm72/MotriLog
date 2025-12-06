@@ -56,8 +56,8 @@ async function handle_login_submit(event) {
 async function handle_register_submit(event) {
   event.preventDefault();
 
-  const firstNameInput = document.getElementById("first-name");
-  const lastNameInput = document.getElementById("last-name");
+  const firstNameInput = document.getElementById("reg-first-name") || document.getElementById("first-name");
+  const lastNameInput = document.getElementById("reg-last-name") || document.getElementById("last-name");
   const emailInput = document.getElementById("reg-email");
   const phoneInput = document.getElementById("reg-phone");
   const passwordInput = document.getElementById("reg-password");
@@ -68,6 +68,8 @@ async function handle_register_submit(event) {
   // Reset errors
   errorEl.hidden = true;
   errorEl.textContent = "";
+
+  let hasError = false;
 
   // Validations
   const nameRegex = /[0-9]/;
@@ -101,9 +103,10 @@ async function handle_register_submit(event) {
 
   const payload = {
     email: emailInput.value.trim(),
-    password_hash: passwordInput.value, // API requires password_hash
+    // FIX: Changed 'password' to 'password_hash' to match Backend Schema
+    password_hash: passwordInput.value, 
     full_name: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-    phone_number: phoneInput.value.trim()
+    phone_number: phoneInput.value.trim() || null
   };
 
   try {
@@ -115,10 +118,16 @@ async function handle_register_submit(event) {
     });
 
     const data = await response.json().catch(() => ({}));
-if (!response.ok) {
+
+    if (!response.ok) {
         let msg = data.message || data.detail || "Registration failed.";
-      
-        if (msg.includes("Email already exists") || msg.includes("already registered")) {
+        
+        // Handle specific dictionary errors from Marshmallow
+        if (typeof data === 'object' && !data.message && !data.detail) {
+             msg = JSON.stringify(data).replace(/[{"}\[\]]/g, '').replace(/:/g, ': ');
+        }
+
+        if (msg.includes("Email already exists")) {
             msg = "This email address is already registered. Please login.";
         } else if (msg.includes("passwords do not match")) {
             msg = "The passwords you entered do not match.";
@@ -127,7 +136,9 @@ if (!response.ok) {
         errorEl.textContent = msg;
         errorEl.hidden = false;
         return;
-}
+    }
+
+    // Redirect to login on success
     window.location.href = "/login";
 
   } catch (err) {
