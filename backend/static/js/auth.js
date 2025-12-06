@@ -2,7 +2,39 @@ console.log("AUTH.JS LOADED!");
 
 // Using session cookies with Flask API
 const API_BASE_URL = "http://127.0.0.1:5000";
+function setupPasswordToggle(inputId, toggleId) {
+    const passwordInput = document.getElementById(inputId);
+    const toggleIcon = document.getElementById(toggleId);
 
+    if (passwordInput && toggleIcon) {
+        toggleIcon.addEventListener("click", function () {
+            const type =
+                passwordInput.getAttribute("type") === "password"
+                    ? "text"
+                    : "password";
+            passwordInput.setAttribute("type", type);
+            this.textContent = type === "password" ? "👁️" : "🔒";
+        });
+    }
+}
+
+function checkNameForNumbers(inputId, errorId) {
+    const input = document.getElementById(inputId);
+    const error = document.getElementById(errorId);
+    const nameRegex = /^\D*$/;
+
+    if (input && error) {
+        input.addEventListener("input", function () {
+            if (!nameRegex.test(this.value)) {
+                error.textContent = "Name cannot contain numbers.";
+                error.removeAttribute("hidden");
+            } else {
+                error.setAttribute("hidden", "");
+                error.textContent = "";
+            }
+        });
+    }
+}
 // ------------------------------------------------------------
 // LOGIN
 // ------------------------------------------------------------
