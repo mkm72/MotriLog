@@ -3,107 +3,96 @@
   <head>
     <meta charset="UTF-8" />
     <title>MotriLog – Add Vehicle</title>
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/addvehicle.css') }}" />
+    <link
+      rel="stylesheet"
+      href="{{ url_for('static', filename='css/addvehicle.css') }}"
+    />
   </head>
 
   <body class="add-vehicle-page">
-    <div class="container">
-      <div class="left-panel">
-        <div class="brand-logo">MotriLog</div>
-      </div>
-
-      <div class="right-panel">
-        <div class="form-card">
-          <a href="dashboard" class="back-link">← Back to Dashboard</a>
-          <h1 class="title">Add New Vehicle</h1>
-
-          <form id="add-vehicle-form" class="form-grid">
-            <!-- Make -->
-            <div class="form-group">
-              <label for="vehicle-make">Make</label>
-              <input
-                type="text"
-                id="vehicle-make"
-                placeholder="e.g., Nissan"
-                required
-              />
-            </div>
-
-            <!-- Model -->
-            <div class="form-group">
-              <label for="vehicle-model">Model</label>
-              <input
-                type="text"
-                id="vehicle-model"
-                placeholder="e.g., Altima"
-                required
-              />
-            </div>
-
-            <!-- Year -->
-            <div class="form-group">
-              <label for="vehicle-year">Year</label>
-              <input
-                type="number"
-                id="vehicle-year"
-                placeholder="2020"
-                required
-              />
-            </div>
-
-            <!-- License Plate -->
-            <div class="form-group">
-              <label for="vehicle-plate">License Plate</label>
-              <input
-                type="text"
-                id="vehicle-plate"
-                placeholder="ABC-1234"
-                required
-              />
-            </div>
-
-            <!-- Color (NEW) -->
-            <div class="form-group">
-              <label for="vehicle-color">Color</label>
-              <input
-                type="text"
-                id="vehicle-color"
-                placeholder="e.g., Black"
-                required
-              />
-            </div>
-
-            <!-- Initial Mileage (NEW) -->
-            <div class="form-group">
-              <label for="vehicle-mileage">Initial Mileage</label>
-              <input
-                type="number"
-                id="vehicle-mileage"
-                placeholder="e.g., 120000"
-                required
-              />
-            </div>
-
-            <!-- VIN -->
-            <div class="form-group full">
-              <label for="vehicle-vin">VIN</label>
-              <input
-                type="text"
-                id="vehicle-vin"
-                placeholder="Enter VIN"
-                required
-              />
-            </div>
-
-            <p id="vehicle-error" class="error-text full" hidden></p>
-
-            <button type="submit" class="btn-primary full">SAVE VEHICLE</button>
-          </form>
-        </div>
-      </div>
+    <!-- LOGO (Top Left Clickable) -->
+    <div class="logo-box">
+      <span class="logo-text" onclick="window.location.href='/'">MotriLog</span>
     </div>
 
-    <!-- FIX: Load auth.js FIRST, then add-vehicle.js -->
+    <!-- FORM CONTAINER FLOATING RIGHT -->
+    <div class="form-card">
+      <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+
+      <h1 class="title">Add New Vehicle</h1>
+
+      <form id="add-vehicle-form" class="form-grid">
+        <div class="form-group">
+          <label for="vehicle-make">Make</label>
+          <input
+            type="text"
+            id="vehicle-make"
+            placeholder="e.g., Nissan"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-model">Model</label>
+          <input
+            type="text"
+            id="vehicle-model"
+            placeholder="e.g., Altima"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-year">Year</label>
+          <input type="number" id="vehicle-year" placeholder="2020" required />
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-plate">License Plate</label>
+          <input
+            type="text"
+            id="vehicle-plate"
+            placeholder="ABC-1234"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-color">Color</label>
+          <input
+            type="text"
+            id="vehicle-color"
+            placeholder="e.g., Black"
+            required
+          />
+        </div>
+
+        <div class="form-group">
+          <label for="vehicle-mileage">Initial Mileage</label>
+          <input
+            type="number"
+            id="vehicle-mileage"
+            placeholder="e.g., 120000"
+            required
+          />
+        </div>
+
+        <div class="form-group full">
+          <label for="vehicle-vin">VIN</label>
+          <input
+            type="text"
+            id="vehicle-vin"
+            placeholder="Enter VIN"
+            required
+          />
+        </div>
+
+        <p id="vehicle-error" class="error-text full" hidden></p>
+
+        <button type="submit" class="btn-primary full">SAVE VEHICLE</button>
+      </form>
+    </div>
+
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/add-vehicle.js') }}"></script>
   </body>
