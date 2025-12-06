@@ -7,16 +7,21 @@
   </head>
 
   <body class="workshops-page">
+    <!-- MAP BACKGROUND -->
     <div id="map-bg"></div>
 
+    <!-- HEADER -->
     <header class="app-header">
-      <div class="brand-logo">MotriLog</div>
+      <!-- Logo goes to main page -->
+      <a href="/" class="brand-logo">MotriLog</a>
+
       <div class="header-actions">
-        <a href="dashboard" class="btn-ghost small">← Back </a>
+        <a href="dashboard" class="btn-ghost small">← Back</a>
         <button id="logout-btn" class="btn-ghost">Logout</button>
       </div>
     </header>
 
+    <!-- FLOATING CARD -->
     <div class="floating-card">
       <div class="search-bar">
         <span class="search-icon">🔍</span>
@@ -27,39 +32,43 @@
         />
       </div>
 
-      <div class="chip-row">
-        <button class="chip chip-active">Oil Change</button>
-        <button class="chip">Tire Services</button>
-        <button class="chip">General Service</button>
-        <button class="chip">AC Repair</button>
+      <div class="chip-row" id="chip-row">
+        <button class="chip chip-active" data-service="oil_change">
+          Oil Change
+        </button>
+        <button class="chip" data-service="tire">Tire Services</button>
+        <button class="chip" data-service="general">General Service</button>
+        <button class="chip" data-service="ac">AC Repair</button>
       </div>
 
       <h3 class="list-title">Nearby Workshops</h3>
 
       <ul class="workshop-list" id="workshop-list">
-        <li class="workshop-item">
-          <div class="workshop-info">
-            <h4>AutoFix Pro</h4>
-            <p class="muted">1.2 km · ⭐ 4.7</p>
-          </div>
-        </li>
-        <li class="workshop-item">
-          <div class="workshop-info">
-            <h4>Speedy Garage</h4>
-            <p class="muted">2.0 km · ⭐ 4.3</p>
-          </div>
-        </li>
-        <li class="workshop-item">
-          <div class="workshop-info">
-            <h4>Precision Motors</h4>
-            <p class="muted">3.1 km · ⭐ 4.8</p>
-          </div>
-        </li>
+        <!-- Will be filled dynamically from Google Places -->
       </ul>
 
-      <button class="btn-primary full mt-16">Get Directions</button>
+      <button id="directions-btn" class="btn-primary full mt-16">
+        Get Directions
+      </button>
     </div>
 
+    <!-- Auth (logout handling) -->
     <script src="../static/js/auth.js"></script>
+
+    <!-- Workshops logic -->
+    <script src="../static/js/workshops.js"></script>
+
+    <!-- Google Maps JS API (Dark Mode map) -->
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDc-KRt7xmzTtvPdCZPGrgtttlUSqtkW_k&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+    <script
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyDc-KRt7xmzTtvPdCZPGrgtttlUSqtkW_k&libraries=places&callback=initMap"
+      async
+      defer
+    ></script>
+    <script src="../static/js/workshops.js"></script>
   </body>
 </html>

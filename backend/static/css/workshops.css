@@ -1,29 +1,31 @@
 :root {
   --white: #ffffff;
-  --muted: #6b7280;
+  --muted: #9ca3af;
   --light-fill: #f5f5f7;
   --placeholder: #8e8e93;
   --motri-blue: #007aff;
   --radius-card: 24px;
-  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+  --font: "Inter", system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+    sans-serif;
 }
 
+/* PAGE */
 body.workshops-page {
   margin: 0;
   font-family: var(--font);
   background: #020617;
+  color: #111827;
   overflow: hidden;
-  color: #1c1c1e;
 }
 
+/* FULLSCREEN MAP */
 #map-bg {
   position: fixed;
   inset: 0;
-  background: url("../img/map-bg.png") center/cover no-repeat;
-  filter: brightness(0.7);
   z-index: 0;
 }
 
+/* HEADER */
 .app-header {
   position: relative;
   z-index: 2;
@@ -37,6 +39,9 @@ body.workshops-page {
 .brand-logo {
   font-size: 26px;
   font-weight: 700;
+  text-decoration: none;
+  color: white;
+  cursor: pointer;
 }
 
 .header-actions {
@@ -45,8 +50,8 @@ body.workshops-page {
 }
 
 .btn-ghost {
-  background: rgba(255, 255, 255, 0.15);
-  border: 1px solid rgba(255, 255, 255, 0.35);
+  background: rgba(15, 23, 42, 0.7);
+  border: 1px solid rgba(148, 163, 184, 0.8);
   padding: 8px 18px;
   border-radius: 10px;
   color: white;
@@ -59,6 +64,12 @@ body.workshops-page {
   font-size: 13px;
 }
 
+.btn-ghost a {
+  color: white;
+  text-decoration: none;
+}
+
+/* FLOATING CARD */
 .floating-card {
   position: absolute;
   left: 50%;
@@ -66,14 +77,15 @@ body.workshops-page {
   transform: translateX(-50%);
   width: 92%;
   max-width: 480px;
-  background: rgba(255,255,255,0.94);
-  backdrop-filter: blur(12px);
+  background: rgba(255, 255, 255, 0.96);
+  backdrop-filter: blur(14px);
   border-radius: var(--radius-card);
   padding: 20px 24px 28px;
-  box-shadow: 0 18px 40px rgba(0,0,0,0.25);
+  box-shadow: 0 22px 50px rgba(15, 23, 42, 0.55);
   z-index: 2;
 }
 
+/* SEARCH BAR */
 .search-bar {
   display: flex;
   align-items: center;
@@ -84,7 +96,7 @@ body.workshops-page {
 }
 
 .search-icon {
-  opacity: 0.5;
+  opacity: 0.6;
   margin-right: 8px;
 }
 
@@ -95,10 +107,15 @@ body.workshops-page {
   flex: 1;
 }
 
+.search-bar input:focus {
+  outline: none;
+}
+
 .search-bar input::placeholder {
   color: var(--placeholder);
 }
 
+/* FILTER CHIPS */
 .chip-row {
   display: flex;
   gap: 8px;
@@ -113,6 +130,7 @@ body.workshops-page {
   border: none;
   font-size: 14px;
   cursor: pointer;
+  white-space: nowrap;
 }
 
 .chip-active {
@@ -120,6 +138,7 @@ body.workshops-page {
   color: white;
 }
 
+/* LIST */
 .list-title {
   margin: 16px 0 10px 0;
   font-size: 16px;
@@ -127,7 +146,7 @@ body.workshops-page {
 }
 
 .workshop-list {
-  max-height: 220px;
+  max-height: 230px;
   overflow-y: auto;
   padding: 0;
   margin: 0;
@@ -139,8 +158,20 @@ body.workshops-page {
   border-radius: 12px;
   padding: 14px;
   margin-bottom: 10px;
-  box-shadow: 0 2px 6px rgba(0,0,0,0.08);
+  box-shadow: 0 2px 6px rgba(15, 23, 42, 0.15);
   cursor: pointer;
+  border: 1px solid transparent;
+  transition: border-color 0.15s ease, background-color 0.15s ease;
+}
+
+.workshop-item:hover {
+  border-color: rgba(56, 189, 248, 0.7);
+  background: #f9fafb;
+}
+
+.workshop-item.selected {
+  border-color: #0ea5e9;
+  background: #eff6ff;
 }
 
 .workshop-info h4 {
@@ -154,6 +185,7 @@ body.workshops-page {
   color: var(--muted);
 }
 
+/* BUTTON */
 .btn-primary {
   background: linear-gradient(90deg, #0ac5d4, #007aff);
   color: white;
@@ -165,6 +197,11 @@ body.workshops-page {
   cursor: pointer;
 }
 
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 .full {
   width: 100%;
 }
@@ -172,4 +209,8 @@ body.workshops-page {
 .mt-16 {
   margin-top: 16px;
 }
-
+#map-bg {
+    position: fixed;
+    inset: 0;
+    z-index: 0;
+}
