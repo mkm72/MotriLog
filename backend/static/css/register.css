@@ -114,12 +114,35 @@ input::placeholder {
 .password-container input {
     padding-right: 40px !important;}
 
-
 /* ============= TERMS CHECKBOX ============= */
-.form-group.terms {
-    flex-direction: row;
-    align-items: center;
-    font-size: 14px;
+
+.form-grid .form-group.terms {
+    grid-column: 1 / -1; 
+    width: auto; 
+    height: auto;
+    margin-bottom: 20px; 
+}
+
+.form-group.terms label {
+ 
+    display: flex; 
+    align-items: center; 
+    flex-direction: row; 
+    font-size: 14px; 
+    cursor: pointer;
+    font-weight: normal; 
+}
+
+.form-group.terms input[type="checkbox"] {
+    flex-shrink: 0; 
+    height: 16px;
+    width: 16px;
+    margin-right: 10px; 
+}
+
+.form-group.terms span {
+    line-height: 1.4;  
+    flex-grow: 1; 
 }
 
 /* ============= BUTTON ============= */
