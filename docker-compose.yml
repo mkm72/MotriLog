@@ -2,15 +2,34 @@ version: '3.8'
 
 services:
   mongo:
-    image: mongo:latest  
+    image: mongo:latest
     container_name: motarilog_db
     ports:
-      - "27017:27017"  # maps port
+      - "27017:27017"
     volumes:
-      - motarilog-data:/data/db 
+      - motarilog-data:/data/db
+    networks:
+      - motarilog-network
     environment:
-      MONGO_INITDB_DATABASE: motarilog 
+      - MONGO_INITDB_DATABASE=motarilog
+
+  backend:
+    build: .
+    container_name: motarilog_backend
+    ports:
+      - "5000:5000"
+    depends_on:
+      - mongo
+    networks:
+      - motarilog-network
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/motarilog
+      - FLASK_APP=app:create_app()
+      - FLASK_DEBUG=1
 
 volumes:
-  
   motarilog-data:
+
+networks:
+  motarilog-network:
+    driver: bridge
