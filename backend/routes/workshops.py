@@ -10,24 +10,29 @@ def find_nearby_workshops():
     try:
         latitude = request.args.get('lat', type=float)
         longitude = request.args.get('lng', type=float)
-        radius = request.args.get('radius', default=10000, type=float) 
+        
+        # CHANGED: Default radius is now 40,000 km (Earth's circumference)
+        # This effectively means "Unlimited"
+        radius = request.args.get('radius', default=40000000, type=float) 
         service_filter = request.args.get('service', type=str)
 
-        if latitude is None or longitude is None:
-            return jsonify({"error": "Missing coordinates"}), 400
-
-        query = {
-            "location": {
-                "$nearSphere": {
-                    "$geometry": {
-                        "type": "Point",
-                        "coordinates": [longitude, latitude]
-                    },
-                    "$maxDistance": radius
-                }
-            },
-            "is_active": True
-        }
+        # If we have coordinates, use geospatial query to sort by distance
+        if latitude is not None and longitude is not None:
+            query = {
+                "location": {
+                    "$nearSphere": {
+                        "$geometry": {
+                            "type": "Point",
+                            "coordinates": [longitude, latitude]
+                        },
+                        "$maxDistance": radius
+                    }
+                },
+                "is_active": True
+            }
+        else:
+            # Fallback: If no GPS provided, just return ALL active workshops
+            query = {"is_active": True}
 
         if service_filter and service_filter != 'all':
             query["services_offered"] = service_filter
@@ -56,19 +61,16 @@ def find_nearby_workshops():
 # --- Route 2: Add New Workshop (ADMIN ONLY) ---
 @workshops_bp.route('/add', methods=['POST'])
 def add_workshop():
-    # 1. Check if user is logged in
     user_id = session.get('user_id')
     if not user_id:
         return jsonify({"error": "Unauthorized"}), 401
 
     try:
-        # 2. SECURITY CHECK: Verify user is an Admin
         current_user = db.users.find_one({"_id": ObjectId(user_id)})
         
         if not current_user or current_user.get('role') != 'admin':
             return jsonify({"error": "Forbidden: Admins only"}), 403
 
-        # 3. Process the Data
         data = request.get_json()
         
         if not data.get('name') or not data.get('lat') or not data.get('lng'):

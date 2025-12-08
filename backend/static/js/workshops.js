@@ -1,31 +1,30 @@
 // --- Global Variables ---
 let map;
 let markersLayer = new L.LayerGroup();
+let hasAutoZoomed = false; 
 
-// --- 1. Initialize Map (Runs immediately) ---
+// --- 1. Initialize Map ---
 function initMap() {
-    // 1. Create Map (Default Center: Riyadh)
-    map = L.map('map').setView([24.7136, 46.6753], 13);
+    // Default View (Saudi Arabia)
+    map = L.map('map').setView([24.7136, 46.6753], 6); 
 
-    // 2. Add Tile Layer (The Map Images)
     L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
         attribution: '© OpenStreetMap contributors'
     }).addTo(map);
 
-    // 3. Add Marker Layer
     markersLayer.addTo(map);
 
-    // 4. Try to get User Location
+    // ➤ SAFETY FETCH: Load data immediately (Default Center)
+    // This ensures pins appear even if GPS is slow/blocked
+    fetchWorkshops(24.7136, 46.6753);
+
+    // Now try to get better user location
     if (navigator.geolocation) {
         navigator.geolocation.getCurrentPosition(
             (position) => {
                 const lat = position.coords.latitude;
                 const lng = position.coords.longitude;
                 
-                // Move map to user
-                map.setView([lat, lng], 14);
-                
-                // Add "You are here" blue dot
                 L.circleMarker([lat, lng], {
                     radius: 8,
                     fillColor: "#3388ff",
@@ -35,20 +34,17 @@ function initMap() {
                     fillOpacity: 0.8
                 }).addTo(map).bindPopup("You are here");
 
-                // Load workshops around user
+                // Re-fetch with user's actual location (optional, since radius is unlimited)
                 fetchWorkshops(lat, lng);
             },
             () => {
-                console.log("GPS denied. Loading default view.");
-                fetchWorkshops(24.7136, 46.6753);
+                console.log("GPS denied. Using default view.");
             }
         );
-    } else {
-        fetchWorkshops(24.7136, 46.6753);
     }
 }
 
-// --- 2. Fetch Data from Backend ---
+// --- 2. Fetch Data ---
 async function fetchWorkshops(lat, lng) {
     markersLayer.clearLayers();
     
@@ -56,23 +52,23 @@ async function fetchWorkshops(lat, lng) {
     if (listContainer) listContainer.innerHTML = '<p style="padding:10px;">Loading...</p>';
 
     try {
-        // Search radius: 50km
-        const response = await fetch(`/workshops/nearby?lat=${lat}&lng=${lng}&radius=50000`);
+        // Radius = 40,000 km (Unlimited)
+        const response = await fetch(`/workshops/nearby?lat=${lat}&lng=${lng}&radius=40000000`);
         const data = await response.json();
 
         if (listContainer) listContainer.innerHTML = '';
 
         if (!data.workshops || data.workshops.length === 0) {
-            if (listContainer) listContainer.innerHTML = '<p style="padding:10px;">No workshops found nearby.</p>';
+            if (listContainer) listContainer.innerHTML = '<p style="padding:10px;">No workshops found.</p>';
             return;
         }
 
+        let groupBounds = [];
+
         data.workshops.forEach(workshop => {
-            // Flip coordinates: MongoDB is [Lng, Lat], Leaflet needs [Lat, Lng]
             const wLat = workshop.location.coordinates[1];
             const wLng = workshop.location.coordinates[0];
 
-            // Add Pin to Map
             const marker = L.marker([wLat, wLng])
                 .bindPopup(`
                     <b>${workshop.name}</b><br>
@@ -81,8 +77,8 @@ async function fetchWorkshops(lat, lng) {
                 `);
             
             markersLayer.addLayer(marker);
+            groupBounds.push([wLat, wLng]);
 
-            // Add to Sidebar List
             if (listContainer) {
                 const li = document.createElement('li');
                 li.className = 'workshop-item';
@@ -93,7 +89,6 @@ async function fetchWorkshops(lat, lng) {
                     </div>
                     <div class="w-rating">⭐ ${workshop.rating}</div>
                 `;
-                // Clicking the list item zooms to the pin
                 li.addEventListener('click', () => {
                     map.setView([wLat, wLng], 16);
                     marker.openPopup();
@@ -102,58 +97,53 @@ async function fetchWorkshops(lat, lng) {
             }
         });
 
+        // Auto-Zoom to show ALL workshops
+        if (groupBounds.length > 0 && !hasAutoZoomed) {
+            map.fitBounds(groupBounds, { padding: [50, 50] });
+            hasAutoZoomed = true;
+        }
+
     } catch (err) {
         console.error("Error loading workshops:", err);
     }
 }
 
-// --- 3. Admin Logic (Safe Mode) ---
+// --- 3. Admin Features ---
 function setupAdminFeatures() {
     const adminForm = document.getElementById('addWorkshopForm');
     const pickBtn = document.getElementById('btn-pick-location');
     let isPicking = false;
     let tempMarker = null;
 
-    // Only run this if the Admin Panel actually exists
     if (pickBtn && adminForm) {
-        
-        // Button Click
         pickBtn.addEventListener('click', () => {
             isPicking = true;
             pickBtn.innerText = "👇 Click map to set pin";
             pickBtn.style.background = "#fff3cd";
         });
 
-        // Map Click (Using the global map variable)
         map.on('click', (e) => {
             if (!isPicking) return;
 
             const { lat, lng } = e.latlng;
-
-            // Fill Form
             document.getElementById('w_lat').value = lat;
             document.getElementById('w_lng').value = lng;
             
-            // Auto-fill Address if empty
             const addrField = document.getElementById('w_address');
             if (!addrField.value) {
-                addrField.value = `Location: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
+                addrField.value = `Loc: ${lat.toFixed(4)}, ${lng.toFixed(4)}`;
             }
 
-            // Visual Marker
             if (tempMarker) map.removeLayer(tempMarker);
             tempMarker = L.marker([lat, lng]).addTo(map).bindPopup("New Location").openPopup();
 
-            // Reset UI
             isPicking = false;
             pickBtn.innerText = "✓ Location Set";
             pickBtn.style.background = "#d4edda";
         });
 
-        // Form Submit
         adminForm.addEventListener('submit', async (e) => {
             e.preventDefault();
-            
             const lat = document.getElementById('w_lat').value;
             const lng = document.getElementById('w_lng').value;
 
@@ -179,7 +169,7 @@ function setupAdminFeatures() {
                 
                 if (res.ok) {
                     alert('Workshop Saved!');
-                    fetchWorkshops(lat, lng); // Refresh map
+                    fetchWorkshops(lat, lng); 
                     adminForm.reset();
                     pickBtn.innerText = "📍 Pick on Map";
                     pickBtn.style.background = "#eee";
@@ -196,11 +186,7 @@ function setupAdminFeatures() {
     }
 }
 
-// --- 4. Start Everything ---
 document.addEventListener("DOMContentLoaded", () => {
-    // 1. Load Map first
     initMap();
-    
-    // 2. Load Admin features (if logged in as admin)
     setupAdminFeatures();
 });
