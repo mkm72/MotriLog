@@ -14,7 +14,7 @@ Ensure you have the following installed on your system:
 
 1.  **Clone the repository:**
     ```bash
-    git clone --branch=develop [https://github.com/mkm72/Motari.git](https://github.com/mkm72/Motari.git)
+    git clone --branch=develop https://github.com/mkm72/Motari.git
     cd Motari
     ```
 
