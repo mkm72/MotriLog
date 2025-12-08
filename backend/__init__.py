@@ -1,6 +1,7 @@
 import os
 from flask import Flask
-from flask_session import Session  
+from flask_session import Session
+from flask_cors import CORS
 from .models import initialize_database, db 
 from .routes.auth import auth_bp
 from .routes.history import history_bp
@@ -21,7 +22,8 @@ def create_app():
     upload_folder = os.path.join(app.root_path,'static','uploads')
     os.makedirs(upload_folder,exist_ok=True)
     app.config['UPLOAD_FOLDER'] = upload_folder 
-
+    
+    CORS(app, supports_credentials=True)
 
     # Initialize Session
     Session(app)
