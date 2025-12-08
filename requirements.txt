@@ -1,3 +1,5 @@
+gunicorn==21.2.0
+flask-cors==4.0.0
 bcrypt==5.0.0
 blinker==1.9.0
 cachelib==0.13.0
