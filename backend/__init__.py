@@ -36,7 +36,7 @@ def create_app():
     app.register_blueprint(history_bp, url_prefix='/api')
     app.register_blueprint(vehicles_bp, url_prefix='/api')
     app.register_blueprint(predictions_bp, url_prefix='/api')
-    app.register_blueprint(workshops_bp, url_prefix='/workshops')
+    app.register_blueprint(workshops_bp, url_prefix='/api')
 
 
     app.register_blueprint(web_bp)

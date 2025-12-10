@@ -5,7 +5,7 @@ from bson.objectid import ObjectId
 workshops_bp = Blueprint('workshops_bp', __name__)
 
 # --- Route 1: Find Nearby Workshops (Public) ---
-@workshops_bp.route('/nearby', methods=['GET'])
+@workshops_bp.route('/workshops/nearby', methods=['GET'])
 def find_nearby_workshops():
     try:
         latitude = request.args.get('lat', type=float)
@@ -59,7 +59,7 @@ def find_nearby_workshops():
 
 
 # --- Route 2: Add New Workshop (ADMIN ONLY) ---
-@workshops_bp.route('/add', methods=['POST'])
+@workshops_bp.route('/workshops/add', methods=['POST'])
 def add_workshop():
     user_id = session.get('user_id')
     if not user_id:

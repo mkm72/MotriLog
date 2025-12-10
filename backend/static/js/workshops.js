@@ -52,8 +52,7 @@ async function fetchWorkshops(lat, lng) {
     if (listContainer) listContainer.innerHTML = '<p style="padding:10px;">Loading...</p>';
 
     try {
-        // Radius = 40,000 km (Unlimited)
-        const response = await fetch(`/workshops/nearby?lat=${lat}&lng=${lng}&radius=40000000`);
+        const response = await fetch(`/api/workshops/nearby?lat=${lat}&lng=${lng}&radius=40000000`);
         const data = await response.json();
 
         if (listContainer) listContainer.innerHTML = '';
@@ -161,7 +160,7 @@ function setupAdminFeatures() {
             };
 
             try {
-                const res = await fetch('/workshops/add', {
+                const res = await fetch('/api/workshops/add', {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(payload)
