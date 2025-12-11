@@ -1,9 +1,20 @@
-from flask import Blueprint, render_template, session
+from flask import Blueprint, render_template, session, redirect, url_for
 from backend.models import db
 from bson.objectid import ObjectId
 
-# Create the Blueprint
 web_bp = Blueprint('web_bp', __name__)
+
+# --- Helper to get user role ---
+def get_current_user_role():
+    user_id = session.get('user_id')
+    if user_id:
+        try:
+            user = db.users.find_one({"_id": ObjectId(user_id)})
+            if user:
+                return user.get('role', 'user')
+        except:
+            pass
+    return None
 
 # --- Routes ---
 
@@ -13,24 +24,24 @@ def main_page():
 
 @web_bp.route('/dashboard')
 def dashboard():
-    # 1. Get the current user's ID from the session
-    user_id = session.get('user_id')
+    role = get_current_user_role()
+    if not role:
+        return redirect(url_for('web_bp.login'))
     
-    # 2. Default role is 'user' (hidden panel)
-    user_role = 'user'
-    
-    # 3. If logged in, check the database for the real role
-    if user_id:
-        try:
-            # We use db.users because 'db' is the database object from models.py
-            user = db.users.find_one({"_id": ObjectId(user_id)})
-            if user:
-                user_role = user.get('role', 'user')
-        except Exception as e:
-            print(f"Error fetching user role: {e}")
+    # FIX: Redirect Admin to Admin Dashboard
+    if role == 'admin':
+        return redirect(url_for('web_bp.admin_dashboard'))
+        
+    return render_template('dashboard.html', user_role=role)
 
-    # 4. Pass the user_role to the HTML template
-    return render_template('dashboard.html', user_role=user_role)
+@web_bp.route('/admin')
+def admin_dashboard():
+    role = get_current_user_role()
+    # Security Check
+    if role != 'admin':
+        return redirect(url_for('web_bp.dashboard'))
+    
+    return render_template('admindashboard.html')
 
 @web_bp.route('/login')
 def login():
@@ -42,26 +53,15 @@ def register():
 
 @web_bp.route('/vehicle-details')
 def vehicle_details():
-    return render_template('vehicledetails.html')
+    role = get_current_user_role()
+    return render_template('vehicledetails.html', user_role=role)
 
 @web_bp.route('/workshops')
 def workshops():
-    # 1. Get User ID
-    user_id = session.get('user_id')
-    user_role = 'user'
+    role = get_current_user_role()
+    return render_template('workshop.html', user_role=role)
 
-    # 2. Check Role in Database
-    if user_id:
-        try:
-            user = db.users.find_one({"_id": ObjectId(user_id)})
-            if user:
-                user_role = user.get('role', 'user')
-        except Exception:
-            pass
-
-    # 3. Pass 'user_role' to the template
-    return render_template('workshop.html', user_role=user_role)
 @web_bp.route('/addvehicle')
 def add_vehicle():
-    # Note: Ensure the file name matches exactly what is in your templates folder
-    return render_template('addvehicle.html')
+    role = get_current_user_role()
+    return render_template('addvehicle.html', user_role=role)

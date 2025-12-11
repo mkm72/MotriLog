@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>MotriLog – Admin Dashboard</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+</head>
+
+<body class="dashboard-page">
+    <div class="bg-image"></div>
+
+    <header class="app-header">
+        <div class="brand-logo" onclick="window.location.href='/'" style="cursor: pointer">
+            MotriLog <span style="font-size: 0.6em; background: #ff4757; padding: 2px 6px; border-radius: 4px; vertical-align: middle;">ADMIN</span>
+        </div>
+        <div class="header-buttons">
+            <a href="/workshops" class="btn-workshops">🔧 Workshops</a>
+            <button id="logout-btn" class="btn-ghost">Logout</button>
+        </div>
+    </header>
+
+    <main class="content">
+        
+        <h1 class="title" style="margin-top: 0;">Admin Tools</h1>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="title" style="font-size: 1.5rem;">Add Manufacturer</h2>
+            </div>
+            <div style="padding: 20px;">
+                <form id="addMakerForm">
+                    <div style="display: flex; gap: 10px; margin-bottom: 10px;">
+                        <input type="text" id="maker_name" placeholder="Name (e.g. Ferrari)" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                        <input type="url" id="maker_logo" placeholder="Logo URL (e.g. https://cdn.simpleicons.org/ferrari)" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
+                    </div>
+                    <button type="submit" class="btn-primary-pill" style="width: 100%; border: none; cursor: pointer; background: #28a745;">Save Manufacturer</button>
+                </form>
+            </div>
+        </section>
+
+    </main>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/admin.js') }}"></script>
+</body>
+</html>

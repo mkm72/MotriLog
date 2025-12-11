@@ -1,6 +1,8 @@
 console.log("AUTH.JS LOADED!");
 
-const API_BASE_URL = "";
+// Note: API_BASE_URL is usually defined in the HTML or defaults to relative path.
+// If not defined, we assume relative path.
+const BASE_URL_PREFIX = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : "";
 
 // ------------------------------------------------------------
 // LOGIN
@@ -23,7 +25,7 @@ async function handle_login_submit(event) {
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/login`, {
+    const response = await fetch(`${BASE_URL_PREFIX}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -34,12 +36,23 @@ async function handle_login_submit(event) {
 
     if (!response.ok) {
       const msg = data.message || data.detail || "Login failed.";
-      errorEl.textContent = msg;
-      errorEl.hidden = false;
+      if (errorEl) {
+        errorEl.textContent = msg;
+        errorEl.hidden = false;
+      }
       return;
     }
 
-    window.location.href = "/dashboard";
+    // --- NEW REDIRECT LOGIC ---
+    if (data.user && data.user.role === 'admin') {
+        console.log("Admin login detected. Redirecting to Admin Dashboard...");
+        window.location.href = "/admin";
+    } else {
+        console.log("User login detected. Redirecting to Dashboard...");
+        window.location.href = "/dashboard";
+    }
+    // --------------------------
+
   } catch (err) {
     console.error("Login error:", err);
     if (errorEl) {
@@ -55,18 +68,12 @@ async function handle_login_submit(event) {
 async function handle_register_submit(event) {
   event.preventDefault();
 
-  const firstNameInput =
-    document.getElementById("reg-first-name") ||
-    document.getElementById("first-name");
-  const lastNameInput =
-    document.getElementById("reg-last-name") ||
-    document.getElementById("last-name");
+  const firstNameInput = document.getElementById("reg-first-name") || document.getElementById("first-name");
+  const lastNameInput = document.getElementById("reg-last-name") || document.getElementById("last-name");
   const emailInput = document.getElementById("reg-email");
   const phoneInput = document.getElementById("reg-phone");
   const passwordInput = document.getElementById("reg-password");
-  const confirmPasswordInput = document.getElementById(
-    "reg-password-confirm"
-  );
+  const confirmPasswordInput = document.getElementById("reg-password-confirm");
   const termsCheckbox = document.getElementById("terms");
   const errorEl = document.getElementById("register-error");
 
@@ -76,54 +83,51 @@ async function handle_register_submit(event) {
   }
 
   let hasError = false;
-
   const nameRegex = /[0-9]/;
-  if (
-    nameRegex.test(firstNameInput.value) ||
-    nameRegex.test(lastNameInput.value)
-  ) {
+
+  if (nameRegex.test(firstNameInput.value) || nameRegex.test(lastNameInput.value)) {
     if (errorEl) {
-      errorEl.textContent = "First or Last Name cannot contain numbers.";
-      errorEl.hidden = false;
+        errorEl.textContent = "First or Last Name cannot contain numbers.";
+        errorEl.hidden = false;
     }
     hasError = true;
   }
 
   if (passwordInput.value.length < 8) {
     if (errorEl) {
-      errorEl.textContent = "Password must be at least 8 characters long.";
-      errorEl.hidden = false;
+        errorEl.textContent = "Password must be at least 8 characters long.";
+        errorEl.hidden = false;
+    }
+    hasError = true;
+  }
+
+  if (passwordInput.value !== confirmPasswordInput.value) {
+    if (errorEl) {
+        errorEl.textContent = "Passwords do not match.";
+        errorEl.hidden = false;
+    }
+    hasError = true;
+  }
+
+  if (termsCheckbox && !termsCheckbox.checked) {
+    if (errorEl) {
+        errorEl.textContent = "You must agree to the terms.";
+        errorEl.hidden = false;
     }
     hasError = true;
   }
 
   if (hasError) return;
 
-  if (passwordInput.value !== confirmPasswordInput.value) {
-    if (errorEl) {
-      errorEl.textContent = "Passwords do not match.";
-      errorEl.hidden = false;
-    }
-    return;
-  }
-
-  if (!termsCheckbox.checked) {
-    if (errorEl) {
-      errorEl.textContent = "You must agree to the terms.";
-      errorEl.hidden = false;
-    }
-    return;
-  }
-
   const payload = {
     email: emailInput.value.trim(),
     password_hash: passwordInput.value,
     full_name: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-    phone_number: phoneInput.value.trim() || null,
+    phone_number: phoneInput ? phoneInput.value.trim() : null,
   };
 
   try {
-    const response = await fetch(`${API_BASE_URL}/api/register`, {
+    const response = await fetch(`${BASE_URL_PREFIX}/api/register`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
@@ -134,11 +138,10 @@ async function handle_register_submit(event) {
 
     if (!response.ok) {
       let msg = data.message || data.detail || "Registration failed.";
-
+      
       if (typeof data === "object" && !data.message && !data.detail) {
-        msg = JSON.stringify(data)
-          .replace(/[{"}\[\]]/g, "")
-          .replace(/:/g, ": ");
+         // Flatten validation errors if any
+         msg = JSON.stringify(data).replace(/[{"}\[\]]/g, "").replace(/:/g, ": ");
       }
 
       if (msg.includes("Email already exists")) {
@@ -149,10 +152,10 @@ async function handle_register_submit(event) {
         errorEl.textContent = msg;
         errorEl.hidden = false;
       }
-
       return;
     }
 
+    // Success
     window.location.href = "/login";
   } catch (err) {
     console.error("Register error:", err);
@@ -168,14 +171,13 @@ async function handle_register_submit(event) {
 // ------------------------------------------------------------
 async function logout() {
   try {
-    await fetch(`${API_BASE_URL}/api/logout`, {
+    await fetch(`${BASE_URL_PREFIX}/api/logout`, {
       method: "POST",
       credentials: "include",
     });
   } catch (e) {
     console.warn("Logout request failed:", e);
   }
-
   window.location.href = "/login";
 }
 
@@ -189,13 +191,19 @@ async function updateHomeNavbar() {
   if (!loginBtn) return;
 
   try {
-    const res = await fetch(`${API_BASE_URL}/api/profile`, {
+    const res = await fetch(`${BASE_URL_PREFIX}/api/profile`, {
       credentials: "include",
     });
 
     if (res.ok) {
+      const userData = await res.json();
+      
+      // Dynamic Redirect based on role
+      const targetUrl = (userData.role === 'admin') ? "/admin" : "/dashboard";
+
       loginBtn.textContent = "Dashboard";
-      loginBtn.href = "/dashboard";
+      loginBtn.href = targetUrl;
+      
       if (registerBtn) registerBtn.style.display = "none";
     } else {
       loginBtn.textContent = "Login";

@@ -1,96 +1,154 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
-    <title>MotriLog – Workshops</title>
-
-    <link
-      rel="stylesheet"
-      href="https://unpkg.com/leaflet@1.9.3/dist/leaflet.css"
-    />
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/workshops.css') }}" />
-  </head>
-
-  <body class="workshops-page">
+<head>
+    <meta charset="UTF-8">
+    <title>MotriLog – Find Workshops</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css"/>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/workshops.css') }}">
     
-    {% if user_role == 'admin' %}
-    <div id="admin-panel" style="
-        position: absolute; 
-        top: 80px; 
-        left: 50%; 
-        transform: translateX(-50%); 
-        z-index: 1000; 
-        background: white; 
-        padding: 15px; 
-        border-radius: 8px; 
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2); 
-        width: 90%; 
-        max-width: 600px; 
-        border: 2px solid #ff4757;">
-        
-        <h3 style="margin: 0 0 10px 0; color: #ff4757;">Admin: Add Workshop</h3>
-        
-        <form id="addWorkshopForm" style="display: flex; gap: 10px; flex-wrap: wrap;">
-            <input type="text" id="w_name" placeholder="Workshop Name" required style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            <input type="text" id="w_address" placeholder="Address" required style="flex: 1; padding: 8px; border: 1px solid #ccc; border-radius: 4px;">
-            
-            <input type="hidden" id="w_lat">
-            <input type="hidden" id="w_lng">
+    <style>
+        /* HEADER (Overlays Map) */
+        .app-header {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            z-index: 9999;
+            padding: 20px;
+            box-sizing: border-box;
+            pointer-events: none;
+        }
+        .brand-logo, .header-actions { pointer-events: auto; }
 
-            <button type="button" id="btn-pick-location" style="background: #eee; border: 1px dashed #333; padding: 8px 15px; border-radius: 4px; cursor: pointer;">
-                📍 Pick on Map
-            </button>
-            
-            <button type="submit" style="background: #ff4757; color: white; border: none; padding: 8px 20px; border-radius: 4px; cursor: pointer; font-weight: bold;">
-                Save
-            </button>
-        </form>
-        <div id="location-status" style="font-size: 0.8em; color: green; margin-top: 5px; display: none;">✓ Location selected!</div>
-    </div>
-    {% endif %}
+        .btn-back {
+            display: inline-block;
+            background: #007aff;
+            color: white !important;
+            padding: 10px 20px;
+            border-radius: 30px;
+            text-decoration: none;
+            font-weight: 600;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.3);
+            border: 2px solid white;
+        }
+        .btn-back:hover { background: #0056b3; }
+
+        /* ADMIN BOX */
+        .admin-add-box {
+            background: #f0fdf4;
+            border: 1px solid #22c55e;
+            padding: 15px;
+            border-radius: 12px;
+            margin-bottom: 15px;
+        }
+        .admin-add-box h3 {
+            margin: 0 0 10px 0;
+            color: #15803d;
+            font-size: 16px;
+        }
+        .admin-row { display: flex; gap: 8px; margin-bottom: 8px; }
+        .admin-add-box input {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ccc;
+            border-radius: 8px;
+            font-size: 14px;
+        }
+
+        /* NEW: Pick Location Button */
+        .btn-pick-loc {
+            background: #eab308; /* Yellow/Orange */
+            color: white;
+            border: none;
+            padding: 8px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 13px;
+            width: 100%;
+            margin-bottom: 8px;
+            font-weight: bold;
+        }
+        .btn-pick-loc.active {
+            background: #ca8a04;
+            box-shadow: inset 0 3px 5px rgba(0,0,0,0.2);
+            content: "Click Map Now...";
+        }
+
+        .btn-save {
+            width: 100%;
+            background: #22c55e;
+            color: white;
+            border: none;
+            padding: 10px;
+            border-radius: 8px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        .btn-save:hover { background: #16a34a; }
+        .coord-input { background: #e5e7eb; color: #555; cursor: not-allowed; }
+    </style>
+</head>
+
+<body class="workshops-page">
+
+    <header class="app-header">
+        <div class="brand-logo" onclick="window.location.href='/'">MotriLog</div>
+        <div class="header-actions">
+            <a href="{% if user_role == 'admin' %}/admin{% else %}/dashboard{% endif %}" class="btn-back">
+                ← Back to Dashboard
+            </a>
+        </div>
+    </header>
 
     <div id="map"></div>
 
-    <header class="app-header">
-      <a href="/" class="brand-logo">MotriLog</a>
-
-      <div class="header-actions">
-        <a href="{{ url_for('web_bp.dashboard') }}" class="btn-ghost small">← Back</a>
-        <button id="logout-btn" class="btn-ghost">Logout</button>
-      </div>
-    </header>
-
     <div class="floating-card">
-      <div class="search-bar">
-        <span class="search-icon">🔍</span>
-        <input
-          id="search-input"
-          type="text"
-          placeholder="Search workshops..."
-        />
-      </div>
+        
+        {% if user_role == 'admin' %}
+        <div class="admin-add-box">
+            <h3>📍 Admin: Add Workshop</h3>
+            
+            <form id="mapAddWorkshopForm">
+                <div class="admin-row">
+                    <input type="text" id="mw_name" placeholder="Name" required>
+                    <input type="text" id="mw_address" placeholder="Address">
+                </div>
+                
+                <button type="button" id="btn-activate-picker" class="btn-pick-loc">📍 Pick Location on Map</button>
 
-      <div class="chip-row" id="chip-row">
-        <button class="chip chip-active" data-service="all">All</button>
-        <button class="chip" data-service="oil_change">Oil Change</button>
-        <button class="chip" data-service="tire">Tires</button>
-        <button class="chip" data-service="general">General</button>
-        <button class="chip" data-service="ac">AC Repair</button>
-      </div>
+                <div class="admin-row">
+                    <input type="number" step="any" id="mw_lat" class="coord-input" placeholder="Lat" required readonly>
+                    <input type="number" step="any" id="mw_lng" class="coord-input" placeholder="Lng" required readonly>
+                </div>
+                <button type="submit" class="btn-save">Save Workshop</button>
+            </form>
+        </div>
+        {% endif %}
 
-      <h3 class="list-title">Nearby Workshops</h3>
-      <ul class="workshop-list" id="workshop-list">
-        </ul>
+        <div class="search-bar">
+            <span class="search-icon">🔍</span>
+            <input type="text" placeholder="Search workshops...">
+        </div>
 
-      <button id="directions-btn" class="btn-primary full mt-16">
-        Get Directions
-      </button>
+        <div class="chip-row">
+            <select id="service-filter" style="padding: 5px; border-radius: 15px; border: 1px solid #ccc;">
+                <option value="all">All Services</option>
+                <option value="general_repair">General Repair</option>
+                <option value="oil_change">Oil Change</option>
+                <option value="tires">Tires</option>
+            </select>
+            <button id="btn-refresh-loc" class="chip">📍 My Location</button>
+        </div>
+
+        <h3 class="list-title">Nearby Workshops</h3>
+        <div id="workshop-list" class="workshop-list">
+            <p style="text-align:center; color:#888;">Loading...</p>
+        </div>
     </div>
 
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
-
-    <script src="https://unpkg.com/leaflet@1.9.3/dist/leaflet.js"></script>
-
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <script>const API_BASE_URL = window.location.origin;</script>
     <script src="{{ url_for('static', filename='js/workshops.js') }}"></script>
-  </body>
+
+</body>
 </html>

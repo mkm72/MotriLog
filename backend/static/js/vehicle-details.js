@@ -1,303 +1,205 @@
-console.log("VEHICLE-DETAILS.JS LOADED!");
+console.log("VEHICLE-DETAILS.JS LOADED");
 
-// NOTE: API_BASE_URL is already defined in auth.js. 
-// We do NOT need to define it here again.
+const urlParams = new URLSearchParams(window.location.search);
+const vehicleId = urlParams.get("id");
+if (!vehicleId) window.location.href = "/dashboard";
 
-// GET VEHICLE ID
-const params = new URLSearchParams(window.location.search);
-const vehicleId = params.get("id");
+let currentVehicleMileage = 0;
+let currentVehicleData = {}; // Store data for editing
 
-console.log("Vehicle ID =", vehicleId);
-
-// ------------------------------------------------------
-// 1. Fetch Vehicle Details
-// ------------------------------------------------------
-async function fetch_vehicle_details() {
+// 1. Fetch Details
+async function fetchVehicleDetails() {
   try {
-    // Use API_BASE_URL from auth.js
-    const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
-      method: "GET",
-      credentials: "include"
-    });
+    const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, { credentials: "include" });
+    const vehicle = await res.json();
+    
+    // Save for Edit Modal
+    currentVehicleData = vehicle;
+    currentVehicleMileage = vehicle.current_mileage || 0;
 
-    if (!res.ok) throw new Error("Failed to fetch vehicle details");
-
-    const data = await res.json();
-
-    document.getElementById("vehicle-title").textContent =
-      `${data.manufacturer} ${data.model}`;
-    document.getElementById("vehicle-plate").textContent = data.license_plate;
-
+    // Update UI
+    document.getElementById("vehicle-title").textContent = `${vehicle.manufacturer} ${vehicle.model} (${vehicle.year})`;
+    document.getElementById("vehicle-plate").textContent = vehicle.license_plate;
     document.getElementById("vehicle-details").innerHTML = `
-      Make: ${data.manufacturer}<br>
-      Model: ${data.model}<br>
-      Year: ${data.year}<br>
-      Color: ${data.color || "-"}<br>
-      VIN: ${data.vin || "-"}<br>
-      Initial Mileage: ${data.initial_mileage} km<br>
-      Current Mileage: ${data.current_mileage} km
+        <p><strong>Color:</strong> ${vehicle.color || "-"}</p>
+        <p><strong>VIN:</strong> ${vehicle.vin || "-"}</p>
+        <p><strong>Mileage:</strong> ${currentVehicleMileage.toLocaleString()} km</p>
     `;
 
-    // Image Logic
     const img = document.getElementById("vehicle-img");
-    if (data.image_filename) {
-        // Add timestamp to force refresh image
-        img.src = `/static/uploads/${data.image_filename}?t=${new Date().getTime()}`;
-    } else {
-        img.src = "../static/img/car-interior.jpg";
-    }
+    img.src = vehicle.image_filename ? `/static/uploads/${vehicle.image_filename}?t=${Date.now()}` : "/static/img/car-interior.jpg";
 
-    fetch_predictions();
-    fetch_service_history();
-
-  } catch (err) {
-    console.error("Error loading details:", err);
-    document.getElementById("vehicle-details").innerHTML = "<p style='color:red'>Error loading vehicle details.</p>";
-  }
+  } catch (err) { console.error(err); }
 }
 
-// ------------------------------------------------------
-// 2. Fetch Service History
-// ------------------------------------------------------
-async function fetch_service_history() {
-  const container = document.getElementById("service-history");
+// ---------------------------------------------------------
+// 2. EDIT VEHICLE LOGIC
+// ---------------------------------------------------------
+const modal = document.getElementById("edit-modal");
+const editBtn = document.getElementById("edit-vehicle-btn");
+const closeBtn = document.querySelector(".close-modal");
+const editForm = document.getElementById("edit-form");
 
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/services`,
-      { credentials: "include" });
-
-    const history = await res.json();
-    container.innerHTML = "";
-
-    if (!history.length) {
-      container.innerHTML = "<p>No service records yet.</p>";
-      return;
-    }
-
-    history.forEach(rec => {
-      container.innerHTML += `
-        <div class="service-item">
-          <div>${new Date(rec.service_date).toLocaleDateString()}</div>
-          <div>${rec.service_type} @ ${rec.mileage_at_service} km</div>
-          <div>Notes: ${rec.notes || '-'}</div>
-        </div>
-      `;
+if (editBtn) {
+    editBtn.addEventListener("click", () => {
+        // Pre-fill form
+        document.getElementById("edit-plate").value = currentVehicleData.license_plate || "";
+        document.getElementById("edit-color").value = currentVehicleData.color || "";
+        document.getElementById("edit-model").value = currentVehicleData.model || "";
+        document.getElementById("edit-year").value = currentVehicleData.year || "";
+        
+        // Show Modal
+        modal.style.display = "block";
     });
-
-  } catch (err) {
-    console.error(err);
-    container.innerHTML = "<p>Error loading history.</p>";
-  }
 }
 
-// ------------------------------------------------------
-// 3. Fetch Predictions
-// ------------------------------------------------------
-async function fetch_predictions() {
-  const box = document.getElementById("predictions-box");
-  box.innerHTML = "<p>Loading predictions...</p>";
-
-  try {
-    const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/predictions`, {
-      method: "GET",
-      credentials: "include"
+if (closeBtn) {
+    closeBtn.addEventListener("click", () => {
+        modal.style.display = "none";
     });
-
-    const data = await res.json();
-
-    if (!data.length) {
-      box.innerHTML = "<p>No predictions available.</p>";
-      return;
-    }
-
-    box.innerHTML = "";
-
-    data.forEach(p => {
-      box.innerHTML += `
-        <div class="prediction-card">
-          <div class="prediction-title">${p.maintenance_type.replace("_", " ")}</div>
-          <div class="prediction-info">
-            Predicted Date: ${new Date(p.predicted_date).toLocaleDateString()}<br>
-            Predicted Mileage: ${p.predicted_mileage} km
-          </div>
-          <div class="prediction-confidence">
-            Confidence: ${(p.confidence_level * 100).toFixed(0)}%
-          </div>
-        </div>
-      `;
-    });
-
-  } catch (err) {
-    console.error("Prediction Error:", err);
-    box.innerHTML = "<p>Error loading predictions.</p>";
-  }
 }
 
-// ------------------------------------------------------
-// 4. Handle Service Form & Inputs
-// ------------------------------------------------------
-document.addEventListener("change", e => {
-  if (e.target.id === "service-type") {
-    const notesGroup = document.getElementById("other-notes-group");
-    if(notesGroup) {
-        notesGroup.style.display = e.target.value === "other" ? "block" : "none";
+// Close if clicking outside box
+window.onclick = (event) => {
+    if (event.target == modal) {
+        modal.style.display = "none";
     }
-  }
+};
 
-  if (e.target.id === "mileage-options") {
-    const input = document.getElementById("service-mileage");
-    if(input) input.style.display = e.target.value === "manual" ? "block" : "none";
-  }
-});
+if (editForm) {
+    editForm.addEventListener("submit", async (e) => {
+        e.preventDefault();
+        
+        const payload = {
+            license_plate: document.getElementById("edit-plate").value,
+            color: document.getElementById("edit-color").value,
+            model: document.getElementById("edit-model").value,
+            year: parseInt(document.getElementById("edit-year").value)
+        };
 
-async function handle_add_service_record(e) {
-  e.preventDefault();
-  
-  const submitBtn = e.target.querySelector("button[type='submit']");
-  if(submitBtn) submitBtn.disabled = true;
+        const btn = editForm.querySelector("button");
+        btn.innerText = "Saving...";
+        btn.disabled = true;
 
-  try {
-    const date = document.getElementById("service-date").value;
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
+                method: "PUT",
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",
+                body: JSON.stringify(payload)
+            });
+
+            if (res.ok) {
+                alert("✅ Vehicle details updated!");
+                modal.style.display = "none";
+                fetchVehicleDetails(); // Refresh UI
+            } else {
+                const data = await res.json();
+                alert("❌ Error: " + (data.error || "Update failed"));
+            }
+        } catch (err) {
+            alert("❌ Network error");
+        } finally {
+            btn.innerText = "Save Changes";
+            btn.disabled = false;
+        }
+    });
+}
+
+// ---------------------------------------------------------
+// 3. DELETE LOGIC (With Confirmation)
+// ---------------------------------------------------------
+const deleteBtn = document.getElementById("delete-vehicle-btn");
+if (deleteBtn) {
+    deleteBtn.addEventListener("click", async () => {
+        // CONFIRMATION DIALOG
+        const confirmed = confirm("⚠️ Are you sure you want to delete this vehicle?\n\nThis action cannot be undone.");
+        
+        if (!confirmed) return; // Stop if user clicked Cancel
+
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, { 
+                method: "DELETE", 
+                credentials: "include" 
+            });
+            
+            if (res.ok) {
+                alert("Vehicle deleted successfully.");
+                window.location.href = "/dashboard";
+            } else {
+                alert("Failed to delete vehicle.");
+            }
+        } catch (err) {
+            console.error(err);
+            alert("Error deleting vehicle.");
+        }
+    });
+}
+
+// ---------------------------------------------------------
+// 4. PHOTO & SERVICE LOGIC (Existing)
+// ---------------------------------------------------------
+const fileInput = document.getElementById("new-vehicle-photo");
+if (fileInput) {
+    fileInput.addEventListener("change", async () => {
+        const file = fileInput.files[0];
+        if (!file) return;
+        const formData = new FormData();
+        formData.append("image", file);
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
+                method: "PUT", credentials: "include", body: formData
+            });
+            if (res.ok) window.location.reload();
+        } catch(e) { console.error(e); }
+    });
+}
+
+document.getElementById("service-form").addEventListener("submit", async (e) => {
+    e.preventDefault();
     const type = document.getElementById("service-type").value;
-    const notesInput = document.getElementById("service-notes");
-    
-    // Logic: If type is 'other', use the text input. Otherwise use the type name.
-    const notes = (type === "other" && notesInput) ? notesInput.value : "";
+    const date = document.getElementById("service-date").value;
+    const mileage = parseInt(document.getElementById("service-mileage").value);
+    const notes = document.getElementById("service-notes").value;
 
-    let mileageOption = document.getElementById("mileage-options").value;
-    let mileage = 0;
-    
-    // Simple logic: We expect the user to enter the mileage if 'manual' is selected
-    // Since your HTML currently only has 'manual' as a functional option, we grab the input.
-    if (mileageOption === "manual") {
-        mileage = Number(document.getElementById("service-mileage").value);
-    } else {
-        mileage = Number(mileageOption); 
-    }
-    
-    if(!mileage) {
-        alert("Please enter a valid mileage.");
-        if(submitBtn) submitBtn.disabled = false;
-        return;
-    }
-
-    // 1. Add service record
-    const resService = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/services`, {
-        method: "POST",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-        service_type: type,
-        service_date: date,
-        mileage_at_service: mileage,
-        notes: notes
-        })
-    });
-
-    if(!resService.ok) {
-        const err = await resService.json();
-        throw new Error(err.error || "Failed to add service");
-    }
-
-    // 2. Update vehicle mileage
-    await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/mileage`, {
-        method: "PUT",
-        credentials: "include",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ current_mileage: mileage })
-    });
-
-    alert("Service added successfully!");
-    document.getElementById("service-form").reset();
-    fetch_vehicle_details(); // Refresh page data
-
-  } catch (err) {
-    console.error(err);
-    alert("Error: " + err.message);
-  } finally {
-    if(submitBtn) submitBtn.disabled = false;
-  }
-}
-
-// ------------------------------------------------------
-// 5. Delete Vehicle
-// ------------------------------------------------------
-async function deleteVehicle() {
-  if (!confirm("Delete this vehicle?")) return;
-
-  const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
-    method: "DELETE",
-    credentials: "include"
-  });
-
-  if (res.ok) {
-    alert("Vehicle deleted.");
-    window.location.href = "/dashboard";
-  } else {
-    alert("Failed to delete.");
-  }
-}
-
-// ------------------------------------------------------
-// 6. Image Upload
-// ------------------------------------------------------
-function setupImageUpload() {
-  const uploadInput = document.getElementById("upload-img-input");
-  if (!uploadInput) return;
-
-  uploadInput.addEventListener("change", async (e) => {
-    const file = e.target.files[0];
-    if (!file) return;
-
-    const formData = new FormData();
-    formData.append("image", file);
-
-    const imgElement = document.getElementById("vehicle-img");
-    
-    // Visual feedback
-    imgElement.style.opacity = "0.5";
+    if (mileage <= currentVehicleMileage) return alert("Mileage must be higher than current.");
 
     try {
-      const res = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}`, {
-        method: "PUT",
-        credentials: "include",
-        body: formData
-      });
+        await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/services`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ service_type: type, service_date: date, mileage_at_service: mileage, notes })
+        });
+        await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/mileage`, {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            credentials: "include",
+            body: JSON.stringify({ current_mileage: mileage })
+        });
+        window.location.reload();
+    } catch (err) { alert("Failed to add service"); }
+});
 
-      if (res.ok) {
-        const data = await res.json();
-        if (data.image_filename) {
-          // Add timestamp to bust cache
-          imgElement.src = `/static/uploads/${data.image_filename}?t=${new Date().getTime()}`;
-        }
-        alert("Image updated!");
-      } else {
-        alert("Failed to upload image.");
-      }
-    } catch (err) {
-      console.error(err);
-      alert("Error uploading image.");
-    } finally {
-      imgElement.style.opacity = "1";
-      uploadInput.value = "";
-    }
-  });
+document.getElementById("service-type").addEventListener("change", (e) => {
+    document.getElementById("other-notes-group").style.display = e.target.value === "other" ? "block" : "none";
+});
+
+async function loadExtras() {
+    const hRes = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/services`, {credentials: "include"});
+    const hData = await hRes.json();
+    document.getElementById("service-history").innerHTML = hData.length ? hData.map(s => `
+        <div class="service-item"><b>${s.service_type}</b> - ${new Date(s.service_date).toLocaleDateString()} (${s.mileage_at_service} km)</div>
+    `).join('') : "<p class='muted'>No history.</p>";
+
+    const pRes = await fetch(`${API_BASE_URL}/api/vehicles/${vehicleId}/predictions`, {credentials: "include"});
+    const pData = await pRes.json();
+    document.getElementById("predictions-box").innerHTML = pData.length ? pData.map(p => `
+        <div class="prediction-card">${p.maintenance_type} due ${new Date(p.predicted_date).toLocaleDateString()}</div>
+    `).join('') : "<p class='muted'>No predictions.</p>";
 }
 
-// ------------------------------------------------------
-// Initialization
-// ------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
-  fetch_vehicle_details();
-  setupImageUpload();
-
-  const serviceForm = document.getElementById("service-form");
-  if(serviceForm) {
-      serviceForm.addEventListener("submit", handle_add_service_record);
-  } else {
-      console.error("Service form not found in DOM!");
-  }
-
-  const deleteBtn = document.getElementById("delete-vehicle-btn");
-  if(deleteBtn) deleteBtn.addEventListener("click", deleteVehicle);
+    fetchVehicleDetails();
+    loadExtras();
 });

@@ -3,7 +3,7 @@
   <head>
     <meta charset="UTF-8" />
     <title>MotriLog – Vehicle Details</title>
-    <link rel="stylesheet" href="../static/css/vehicledetails.css" />
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/vehicledetails.css') }}" />
   </head>
 
   <body class="vehicle-page">
@@ -12,116 +12,121 @@
     <header class="app-header">
       <div class="brand-logo">MotriLog</div>
       <div class="header-actions">
-        <a href="/dashboard" class="btn-ghost small">← Back</a>
+        <a href="{% if user_role == 'admin' %}/admin{% else %}/dashboard{% endif %}" class="btn-ghost small">← Back</a>
         <button id="logout-btn" class="btn-ghost">Logout</button>
       </div>
     </header>
 
     <main class="content">
-      <section class="vehicle-card">
-        <div class="vehicle-top">
-          <div class="vehicle-photo">
-            <img
-              id="vehicle-img"
-              src="../static/img/car-interior.jpg"
-              alt="Vehicle"
-            />
+      
+      <div class="details-grid">
+        
+        <aside class="left-col">
+            <section class="info-card">
+                <div class="vehicle-photo">
+                    <img id="vehicle-img" src="{{ url_for('static', filename='img/car-interior.jpg') }}" alt="Vehicle" />
+                    
+                    <form id="photo-upload-form">
+                        <label for="new-vehicle-photo" class="photo-edit-btn" title="Change Photo">📷</label>
+                        <input type="file" id="new-vehicle-photo" accept="image/*" style="display: none;">
+                    </form>
+                </div>
 
-            <label id="upload-img-label" for="upload-img-input"
-              >Upload Image</label
-            >
-            <input type="file" id="upload-img-input" />
-          </div>
+                <div class="vehicle-meta">
+                    <h1 id="vehicle-title">Loading...</h1>
+                    <p id="vehicle-plate" class="muted">...</p>
+                    <hr style="border: 0; border-top: 1px solid #eee; margin: 15px 0;">
+                    <div id="vehicle-details">Loading details...</div>
+                    
+                    <div class="action-buttons" style="margin-top: 15px; display: flex; gap: 10px;">
+                        <button id="edit-vehicle-btn" class="btn-secondary full-width">Edit Details</button>
+                        <button id="delete-vehicle-btn" class="btn-danger full-width">Delete</button>
+                    </div>
+                </div>
+            </section>
+        </aside>
 
-          <div class="vehicle-meta">
-            <h1 id="vehicle-title">Vehicle Name</h1>
-            <p id="vehicle-plate" class="muted">Plate</p>
+        <div class="right-col">
+            <section class="card-panel">
+                <h3>Maintenance Predictions</h3>
+                <div id="predictions-box" class="predictions-grid"></div>
+            </section>
 
-            <div id="vehicle-details">Loading details...</div>
+            <section class="card-panel">
+                <h3>Add Service Record</h3>
+                <form id="service-form">
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Date</label>
+                            <input type="date" id="service-date" required>
+                        </div>
+                        <div class="form-group">
+                            <label>Service Type</label>
+                            <select id="service-type" required>
+                                <option value="oil_change">Oil Change</option>
+                                <option value="tire_rotation">Tire Rotation</option>
+                                <option value="brake_service">Brake Service</option>
+                                <option value="air_filter">Air Filter</option>
+                                <option value="battery">Battery</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                    </div>
+                    
+                    <div class="form-group" id="other-notes-group" style="display: none; margin-top: 10px;">
+                        <label>Description</label>
+                        <input type="text" id="service-notes" placeholder="Enter description...">
+                    </div>
 
-            <button id="delete-vehicle-btn" class="btn-danger">
-              Delete Vehicle
-            </button>
-          </div>
+                    <div class="form-row" style="margin-top: 10px;">
+                        <div class="form-group">
+                            <label>New Mileage</label>
+                            <input type="number" id="service-mileage" placeholder="e.g. 55000" required>
+                        </div>
+                        <div class="form-group" style="display: flex; align-items: flex-end;">
+                            <button type="submit" class="btn-primary full-width">+ Add Service</button>
+                        </div>
+                    </div>
+                    <p id="service-error" class="error-text" hidden></p>
+                </form>
+            </section>
+
+            <section class="card-panel">
+                <h3>Service History</h3>
+                <div id="service-history" class="history-list"></div>
+            </section>
         </div>
-
-        <!-- PREDICTIONS -->
-        <section class="section">
-          <h2>Predictions</h2>
-          <div id="predictions-box"></div>
-        </section>
-
-        <!-- SERVICE HISTORY -->
-        <section class="section">
-          <h2>Service History</h2>
-          <div id="service-history" class="service-history"></div>
-        </section>
-
-        <!-- ADD SERVICE FORM -->
-        <section class="section">
-          <h3>Add Service Record</h3>
-
-          <form id="service-form" class="service-form">
-            <div class="form-row">
-              <div class="form-group">
-                <label for="service-date">Date</label>
-                <input type="date" id="service-date" required />
-              </div>
-
-              <div class="form-group">
-                <label for="service-type">Service Type</label>
-                <select id="service-type" required>
-                  <option value="oil_change">Oil Change</option>
-                  <option value="tire_rotation">Tire Rotation</option>
-                  <option value="brake_service">Brake Service</option>
-                  <option value="air_filter">Air Filter</option>
-                  <option value="battery">Battery</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-            </div>
-
-            <div
-              class="form-group"
-              id="other-notes-group"
-              style="display: none"
-            >
-              <label for="service-notes">Description</label>
-              <input
-                type="text"
-                id="service-notes"
-                placeholder="Enter description…"
-              />
-            </div>
-
-            <div class="form-group">
-              <label for="mileage-options">Mileage</label>
-              <select id="mileage-options">
-                <option value="5000">+ 5000 km</option>
-                <option value="10000">+ 10000 km</option>
-                <option value="15000">+ 15000 km</option>
-                <option value="manual">Manual Entry</option>
-              </select>
-
-              <input
-                type="number"
-                id="service-mileage"
-                placeholder="Enter mileage"
-                style="display: none"
-              />
-            </div>
-
-            <p id="service-error" class="error-text" hidden></p>
-
-            <div class="form-actions">
-              <button type="submit" class="btn-primary">+ Add Service</button>
-            </div>
-          </form>
-        </section>
-      </section>
+      </div>
     </main>
 
-    <script src="../static/js/auth.js"></script>
-    <script src="../static/js/vehicle-details.js"></script>
+    <div id="edit-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2>Edit Vehicle Details</h2>
+            <form id="edit-form">
+                <div class="form-group">
+                    <label>License Plate</label>
+                    <input type="text" id="edit-plate" required>
+                </div>
+                <div class="form-group">
+                    <label>Color</label>
+                    <input type="text" id="edit-color">
+                </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="edit-model" required>
+                </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <input type="number" id="edit-year" required>
+                </div>
+                <button type="submit" class="btn-primary full-width" style="margin-top: 15px;">Save Changes</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script>const API_BASE_URL = window.location.origin;</script>
+    <script src="{{ url_for('static', filename='js/vehicle-details.js') }}"></script>
   </body>
 </html>

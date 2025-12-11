@@ -9,11 +9,13 @@
 <body class="add-vehicle-page">
 
     <div class="logo-box">
-        <div class="logo-text" onclick="window.location.href='/dashboard'">MotriLog</div>
+        <div class="logo-text" onclick="window.location.href='/'">MotriLog</div>
     </div>
 
     <div class="form-card">
-        <a href="/dashboard" class="back-link">Back to Dashboard</a>
+        <a href="{% if user_role == 'admin' %}/admin{% else %}/dashboard{% endif %}" class="back-link">
+            Back to Dashboard
+        </a>
         
         <h1 class="title">Add New Vehicle</h1>
 
@@ -21,7 +23,6 @@
             <p id="vehicle-error" class="error-text" hidden></p>
 
             <div class="form-grid">
-                
                 <div class="form-group full">
                     <label>Manufacturer</label>
                     <div class="custom-dropdown" id="maker-dropdown">
@@ -57,7 +58,6 @@
 
                 <div class="form-group">
                     <label>Color: <span id="color-name-display" style="font-weight:normal; color:#666;">Select...</span></label>
-                    
                     <div class="color-swatches">
                         <div class="swatch" style="background:#FFFFFF; border:1px solid #ddd;" data-color="White" title="White"></div>
                         <div class="swatch" style="background:#000000;" data-color="Black" title="Black"></div>
@@ -69,9 +69,7 @@
                         <div class="swatch" style="background:#3b2f2f;" data-color="Brown" title="Brown"></div>
                         <div class="swatch other-swatch" data-color="Other" title="Other">+</div>
                     </div>
-
                     <input type="hidden" id="vehicle-color" required>
-                    
                     <input type="text" id="custom-color-input" placeholder="Type Color Name..." style="display:none; margin-top:5px;">
                 </div>
 
@@ -88,12 +86,21 @@
                 <div class="full">
                     <button type="submit" class="btn-primary">Add Vehicle</button>
                 </div>
-
             </div>
         </form>
     </div>
 
     <script>const API_BASE_URL = window.location.origin;</script>
     <script src="{{ url_for('static', filename='js/add-vehicle.js') }}"></script>
+    <script>
+        // Inline Color Logic to ensure it works immediately
+        const colorInput = document.getElementById('vehicle-color');
+        const colorLabel = document.getElementById('color-hex-label');
+        if(colorInput && colorLabel) {
+            colorInput.addEventListener('input', (e) => {
+                colorLabel.textContent = e.target.value.toUpperCase();
+            });
+        }
+    </script>
 </body>
 </html>

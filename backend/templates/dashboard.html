@@ -10,15 +10,17 @@
     <div class="bg-image"></div>
 
     <header class="app-header">
-      <div
-        class="brand-logo"
-        onclick="window.location.href='/'"
-        style="cursor: pointer"
-      >
+      <div class="brand-logo" onclick="window.location.href='/'" style="cursor: pointer">
         MotriLog
       </div>
-
       <div class="header-buttons">
+        
+        {% if user_role == 'admin' %}
+        <a href="/admin" class="btn-workshops" style="background: #ff4757; border: none; margin-right: 10px;">
+             Admin Panel
+        </a>
+        {% endif %}
+        
         <a href="/workshops" class="btn-workshops">🔧 Workshops</a>
         <button id="logout-btn" class="btn-ghost">Logout</button>
       </div>
@@ -31,31 +33,9 @@
           <a href="/addvehicle" class="btn-primary-pill"> + Add Vehicle </a>
         </div>
         <div id="vehicles-list" class="vehicles-grid">
-            </div>
-      </section>
-
-      {% if user_role == 'admin' %}
-      <section class="dashboard-card" style="margin-top: 2rem;">
-        <div class="card-header">
-            <h1 class="title">Admin: Add Workshop</h1>
-        </div>
-        <div style="padding: 20px;">
-            <form id="addWorkshopForm">
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="text" id="w_name" placeholder="Workshop Name" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                    <input type="text" id="w_address" placeholder="Address" style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                </div>
-                <div style="display: flex; gap: 10px; margin-bottom: 10px;">
-                    <input type="number" step="any" id="w_lat" placeholder="Lat" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                    <input type="number" step="any" id="w_lng" placeholder="Lng" required style="flex: 1; padding: 10px; border-radius: 8px; border: 1px solid #ccc;">
-                    <button type="button" id="btn-get-location" style="padding: 10px; border-radius: 8px; border: 1px solid #ccc; cursor: pointer;">📍</button>
-                </div>
-                <button type="submit" class="btn-primary-pill" style="width: 100%; border: none; cursor: pointer;">Save Workshop</button>
-            </form>
+            <p>Loading...</p>
         </div>
       </section>
-      {% endif %}
-
     </main>
 
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>

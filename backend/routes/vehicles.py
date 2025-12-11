@@ -16,7 +16,7 @@ def allowed_file(filename):
            filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ---------------------------------------------------------
-# NEW: Get All Manufacturers
+# Get All Manufacturers (Public)
 # ---------------------------------------------------------
 @vehicles_bp.route('/manufacturers', methods=['GET'])
 def get_manufacturers():
@@ -26,6 +26,58 @@ def get_manufacturers():
         return jsonify([manufacturer_schema.dump(m) for m in makers]), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+# ---------------------------------------------------------
+# Add Manufacturer (ADMIN ONLY)
+# ---------------------------------------------------------
+@vehicles_bp.route('/manufacturers', methods=['POST'])
+def add_manufacturer():
+    # 1. Check Login
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({'error': 'Unauthorized'}), 401
+
+    # 2. Check Admin Role
+    current_user = db.users.find_one({"_id": ObjectId(user_id)})
+    if not current_user or current_user.get('role') != 'admin':
+        return jsonify({'error': 'Forbidden: Admins only'}), 403
+
+    # 3. Process Request
+    data = request.get_json()
+    if not data or 'name' not in data:
+        return jsonify({'error': 'Manufacturer name is required'}), 400
+
+    maker_name = data['name'].strip()
+    logo_url = data.get('logo_url')  # Optional
+
+    # Check if exists (case-insensitive)
+    existing = db.manufacturers.find_one({
+        "name": {"$regex": f"^{maker_name}$", "$options": "i"}
+    })
+
+    if existing:
+        # Optional: Update the logo if it exists but has none
+        if logo_url and not existing.get('logo_url'):
+            db.manufacturers.update_one(
+                {"_id": existing['_id']},
+                {"$set": {"logo_url": logo_url}}
+            )
+            return jsonify({'message': 'Manufacturer updated with new logo'}), 200
+        return jsonify({'error': 'Manufacturer already exists'}), 409
+
+    # Create new
+    new_maker = {
+        "name": maker_name,
+        "logo_url": logo_url,
+        "created_at": datetime.utcnow()
+    }
+
+    try:
+        result = db.manufacturers.insert_one(new_maker)
+        new_maker['_id'] = result.inserted_id
+        return jsonify(manufacturer_schema.dump(new_maker)), 201
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
 
 # ---------------------------------------------------------
 # Get All User's Vehicles
@@ -47,7 +99,7 @@ def get_vehicles():
         return jsonify({'error': str(e)}), 500
 
 # ---------------------------------------------------------
-# Add New Vehicle (Auto-adds Manufacturer)
+# Add New Vehicle (Auto-adds Manufacturer if missing)
 # ---------------------------------------------------------
 @vehicles_bp.route('/vehicles', methods=['POST'])
 def add_vehicle():
@@ -77,11 +129,8 @@ def add_vehicle():
     if existing_vehicle:
         return jsonify({'error': 'License plate already registered'}), 409
 
-    # --- NEW LOGIC: Check & Add Manufacturer ---
-    # We check if this manufacturer exists; if not, we add it.
+    # --- Check & Add Manufacturer (Auto-add without logo) ---
     maker_name = data['manufacturer'].strip()
-    
-    # Case-insensitive check
     existing_maker = db.manufacturers.find_one({
         "name": {"$regex": f"^{maker_name}$", "$options": "i"}
     })
@@ -90,7 +139,7 @@ def add_vehicle():
         try:
             db.manufacturers.insert_one({
                 "name": maker_name,
-                "logo_url": None, # No logo for manual entry
+                "logo_url": None, 
                 "created_at": datetime.utcnow()
             })
             print(f"🆕 Auto-added new manufacturer: {maker_name}")
@@ -122,7 +171,7 @@ def add_vehicle():
     
     vehicle_doc = {
         'user_id': ObjectId(user_id),
-        'manufacturer': data['manufacturer'], # The submitted name
+        'manufacturer': data['manufacturer'],
         'model': data['model'],
         'year': data['year'],
         'color': data.get('color'),
