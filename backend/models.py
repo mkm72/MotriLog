@@ -27,6 +27,12 @@ class ObjectIdField(fields.Field):
 
 # --- Schemas ---
 
+class ManufacturerSchema(Schema):
+    _id = ObjectIdField(dump_only=True)
+    name = fields.String(required=True)
+    logo_url = fields.String(load_default=None) # URL to external logo or local file
+    created_at = fields.DateTime(dump_only=True, dump_default=datetime.utcnow)
+
 class UserSchema(Schema):
     _id = ObjectIdField(dump_only=True)
     email = fields.Email(required=True)
@@ -161,8 +167,11 @@ maintenance_prediction_schema = MaintenancePredictionSchema()
 accident_history_schema = AccidentHistorySchema()
 workshop_schema = WorkshopSchema()
 session_schema = SessionSchema()
+manufacturer_schema = ManufacturerSchema() # NEW
 
 # --- Database Initialization ---
+
+# ... (Keep imports and schemas as they are) ...
 
 def initialize_database():
     try:
@@ -190,24 +199,54 @@ def initialize_database():
         db.workshops.create_index([("location", "2dsphere")]) 
         db.workshops.create_index("services_offered")
         
+        # Manufacturer Index
+        db.manufacturers.create_index("name", unique=True)
+
         # Session Index
         db.sessions.create_index("expireAt", expireAfterSeconds=0)
 
         print("Database initialized and indexes ensured.")
+
+        print("Updating manufacturer logos to SimpleIcons...")
+        defaults = [
+            {"name": "Toyota", "logo_url": "https://cdn.simpleicons.org/toyota"},
+            {"name": "Honda", "logo_url": "https://cdn.simpleicons.org/honda"},
+            {"name": "Ford", "logo_url": "https://cdn.simpleicons.org/ford"},
+            {"name": "BMW", "logo_url": "https://cdn.simpleicons.org/bmw"},
+            {"name": "Mercedes", "logo_url": "https://cdn.simpleicons.org/mercedes"},
+            {"name": "Chevrolet", "logo_url": "https://cdn.simpleicons.org/chevrolet"},
+            {"name": "Nissan", "logo_url": "https://cdn.simpleicons.org/nissan"},
+            {"name": "Hyundai", "logo_url": "https://cdn.simpleicons.org/hyundai"},
+            {"name": "Kia", "logo_url": "https://cdn.simpleicons.org/kia"},
+            {"name": "Audi", "logo_url": "https://cdn.simpleicons.org/audi"},
+            {"name": "Volkswagen", "logo_url": "https://cdn.simpleicons.org/volkswagen"},
+            {"name": "Tesla", "logo_url": "https://cdn.simpleicons.org/tesla"},
+            {"name": "Lexus", "logo_url": "https://simpleicons.org/icons/lexus.svg"}, # Fallback or specific SVG
+            {"name": "Subaru", "logo_url": "https://cdn.simpleicons.org/subaru"},
+            {"name": "Mazda", "logo_url": "https://cdn.simpleicons.org/mazda"}
+        ]
         
+        for maker in defaults:
+            try:
+                # Force update the logo_url for existing makers
+                db.manufacturers.update_one(
+                    {"name": maker["name"]},
+                    {"$set": {"logo_url": maker["logo_url"]}},
+                    upsert=True
+                )
+            except Exception as e:
+                print(f"Error seeding {maker['name']}: {e}")
+
         # --- Create/Update Default Admin Account ---
-        # We need to make sure the password matches what 'auth.py' expects (bcrypt)
         admin_email = "admin@motarilog.com"
         admin_pass_raw = "admin123"
-        
-        # Generate valid bcrypt hash
         hashed_pw_bytes = bcrypt.hashpw(admin_pass_raw.encode('utf-8'), bcrypt.gensalt())
         hashed_pw_str = hashed_pw_bytes.decode('utf-8')
 
         admin_user = db.users.find_one({"email": admin_email})
         
         if not admin_user:
-            print("⚡ Creating default Admin account...")
+            print("Creating default Admin account...")
             db.users.insert_one({
                 "name": "System Admin",
                 "email": admin_email,
@@ -217,12 +256,10 @@ def initialize_database():
                 "is_active": True
             })
         else:
-            # FIX: Force update the password to ensure it's valid bcrypt
             db.users.update_one(
                 {"email": admin_email},
                 {"$set": {"password_hash": hashed_pw_str}}
             )
-            print("✔ Admin account exists (Password synced).")
 
     except Exception as e:
         print(f"Error initializing database: {e}")

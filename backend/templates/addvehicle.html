@@ -1,86 +1,99 @@
 <!DOCTYPE html>
 <html lang="en">
-  <head>
-    <meta charset="UTF-8" />
+<head>
+    <meta charset="UTF-8">
     <title>MotriLog – Add Vehicle</title>
-        <link rel="stylesheet" href="../static/css/addvehicle.css" />
-  </head>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/addvehicle.css') }}">
+</head>
 
-  <body class="add-vehicle-page">
-    <!-- LOGO (Clickable) -->
+<body class="add-vehicle-page">
+
     <div class="logo-box">
-      <span class="logo-text" onclick="window.location.href='/'">MotriLog</span>
+        <div class="logo-text" onclick="window.location.href='/dashboard'">MotriLog</div>
     </div>
 
-    <!-- MAIN CARD -->
     <div class="form-card">
-      <a href="/dashboard" class="back-link">← Back to Dashboard</a>
+        <a href="/dashboard" class="back-link">Back to Dashboard</a>
+        
+        <h1 class="title">Add New Vehicle</h1>
 
-      <h1 class="title">Add New Vehicle</h1>
+        <form id="add-vehicle-form">
+            <p id="vehicle-error" class="error-text" hidden></p>
 
-      <form id="add-vehicle-form" class="form-grid">
-        <!-- Make -->
-        <div class="form-group">
-          <label for="vehicle-make">Maker</label>
-          <input type="text" id="vehicle-make" required />
-        </div>
+            <div class="form-grid">
+                
+                <div class="form-group full">
+                    <label>Manufacturer</label>
+                    <div class="custom-dropdown" id="maker-dropdown">
+                        <div class="dropdown-btn" id="dropdown-selected">
+                            <span>Select Maker</span>
+                            <span>▼</span>
+                        </div>
+                        <div class="dropdown-list" id="maker-list"></div>
+                    </div>
+                    <input type="hidden" id="vehicle-make-hidden" required>
+                    <input type="text" id="manual-maker-input" placeholder="Type Manufacturer Name...">
+                </div>
 
-        <!-- Model -->
-        <div class="form-group">
-          <label for="vehicle-model">Model</label>
-          <input type="text" id="vehicle-model" required />
-        </div>
+                <div class="form-group">
+                    <label>Model</label>
+                    <input type="text" id="vehicle-model" required placeholder="e.g. Camry">
+                </div>
 
-        <!-- Year -->
-        <div class="form-group">
-          <label for="vehicle-year">Year</label>
-          <input type="number" id="vehicle-year" required />
-        </div>
+                <div class="form-group">
+                    <label>Year</label>
+                    <input type="number" id="vehicle-year" required min="1900" max="2100">
+                </div>
 
-        <!-- License Plate -->
-        <div class="form-group">
-          <label for="vehicle-plate">License Plate</label>
-          <input type="text" id="vehicle-plate" required />
-        </div>
+                <div class="form-group full">
+                    <label>License Plate</label>
+                    <input type="text" id="vehicle-plate" required placeholder="e.g. ABC-1234">
+                </div>
 
-        <!-- Color (optional with color picker) -->
-        <div class="form-group">
-          <label for="vehicle-color">Color (optional)</label>
-          <div class="color-row">
-            <input type="color" id="color-picker" value="#000000" />
-            <input
-              type="text"
-              id="vehicle-color"
-              placeholder="Color name (optional)"
-            />
-          </div>
-        </div>
+                <div class="form-group">
+                    <label>Initial Mileage</label>
+                    <input type="number" id="vehicle-mileage" required min="0">
+                </div>
 
-        <!-- Initial Mileage -->
-        <div class="form-group">
-          <label for="vehicle-mileage">Initial Mileage</label>
-          <input type="number" id="vehicle-mileage" required />
-        </div>
+                <div class="form-group">
+                    <label>Color: <span id="color-name-display" style="font-weight:normal; color:#666;">Select...</span></label>
+                    
+                    <div class="color-swatches">
+                        <div class="swatch" style="background:#FFFFFF; border:1px solid #ddd;" data-color="White" title="White"></div>
+                        <div class="swatch" style="background:#000000;" data-color="Black" title="Black"></div>
+                        <div class="swatch" style="background:#C0C0C0;" data-color="Silver" title="Silver"></div>
+                        <div class="swatch" style="background:#808080;" data-color="Gray" title="Gray"></div>
+                        <div class="swatch" style="background:#bb0a1e;" data-color="Red" title="Red"></div>
+                        <div class="swatch" style="background:#003399;" data-color="Blue" title="Blue"></div>
+                        <div class="swatch" style="background:#f5f5dc; border:1px solid #ddd;" data-color="Beige" title="Beige"></div>
+                        <div class="swatch" style="background:#3b2f2f;" data-color="Brown" title="Brown"></div>
+                        <div class="swatch other-swatch" data-color="Other" title="Other">+</div>
+                    </div>
 
-        <!-- VIN -->
-        <div class="form-group full">
-          <label for="vehicle-vin">VIN (optional)</label>
-          <input type="text" id="vehicle-vin" maxlength="17" />
-        </div>
+                    <input type="hidden" id="vehicle-color" required>
+                    
+                    <input type="text" id="custom-color-input" placeholder="Type Color Name..." style="display:none; margin-top:5px;">
+                </div>
 
-        <!-- Purchase Date -->
-        <div class="form-group full">
-          <label for="purchase-date">Purchase Date (optional)</label>
-          <input type="date" id="purchase-date" />
-        </div>
+                <div class="form-group full">
+                    <label>VIN (Optional)</label>
+                    <input type="text" id="vehicle-vin" maxlength="17" placeholder="17 Characters">
+                </div>
 
-        <p id="vehicle-error" class="error-text full" hidden></p>
+                <div class="form-group full">
+                    <label>Purchase Date</label>
+                    <input type="date" id="purchase-date">
+                </div>
+                
+                <div class="full">
+                    <button type="submit" class="btn-primary">Add Vehicle</button>
+                </div>
 
-        <button type="submit" class="btn-primary full">SAVE VEHICLE</button>
-      </form>
+            </div>
+        </form>
     </div>
 
-    <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
+    <script>const API_BASE_URL = window.location.origin;</script>
     <script src="{{ url_for('static', filename='js/add-vehicle.js') }}"></script>
-  </body>
+</body>
 </html>
