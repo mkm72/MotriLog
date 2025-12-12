@@ -13,14 +13,14 @@
     </div>
 
     <div class="form-card">
-        <a href="/dashboard" class="back-link">
+        <a href="{% if user_role == 'admin' %}/admin{% else %}/dashboard{% endif %}" class="back-link">
             Back to Dashboard
         </a>
         
         <h1 class="title">Add New Vehicle</h1>
 
         <form id="add-vehicle-form">
-            <p id="vehicle-error" class="error-text" style="display:none; text-align:center;"></p>
+            <p id="vehicle-error" class="error-text" hidden></p>
 
             <div class="form-grid">
                 <div class="form-group full">
@@ -43,10 +43,7 @@
 
                 <div class="form-group">
                     <label>Year</label>
-                    <input type="number" id="vehicle-year" required min="1900" max="2100" placeholder="YYYY">
-                    <small id="year-error" style="display:none; color:red; font-size:12px; margin-top:4px;">
-                        Year must be 1900 or greater
-                    </small>
+                    <input type="number" id="vehicle-year" required min="1900" max="2100">
                 </div>
 
                 <div class="form-group full">
@@ -95,5 +92,16 @@
 
     <script>const API_BASE_URL = window.location.origin;</script>
     <script src="{{ url_for('static', filename='js/add-vehicle.js') }}"></script>
+    <script>
+        // Inline Color Logic to ensure it works immediately
+        const colorInput = document.getElementById('vehicle-color');
+        const colorLabel = document.getElementById('color-hex-label');
+        if(colorInput && colorLabel) {
+            colorInput.addEventListener('input', (e) => {
+                colorLabel.textContent = e.target.value.toUpperCase();
+            });
+        }
+    </script>
 </body>
 </html>
+
