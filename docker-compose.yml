@@ -10,8 +10,6 @@ services:
       - motarilog-data:/data/db
     networks:
       - motarilog-network
-    environment:
-      - MONGO_INITDB_DATABASE=motarilog
 
   backend:
     build: .
@@ -20,17 +18,31 @@ services:
       - "5000:5000"
     depends_on:
       - mongo
+    volumes:
+      - ./backend/static/uploads:/app/backend/static/uploads
     networks:
       - motarilog-network
-    # --- THIS IS THE MISSING PART ---
-    volumes:
-      # Maps your local 'uploads' folder to the container's 'uploads' folder
-      - ./backend/static/uploads:/app/backend/static/uploads
-    # --------------------------------
     environment:
       - MONGO_URI=mongodb://mongo:27017/motarilog
       - FLASK_APP=run.py
       - FLASK_DEBUG=1
+      # REPLACE THIS BOT TOKEN
+      - TELEGRAM_BOT_TOKEN=----------REPLACEME----------------
+
+  # --- NEW BOT SERVICE ---
+  bot:
+    build: .
+    container_name: motarilog_bot
+    depends_on:
+      - mongo
+    networks:
+      - motarilog-network
+    environment:
+      - MONGO_URI=mongodb://mongo:27017/motarilog
+      # SAME TOKEN HERE
+      - TELEGRAM_BOT_TOKEN=---------REPLACEME----------------
+    # Run the bot script instead of Flask
+    command: ["python", "backend/bot_service.py"]
 
 volumes:
   motarilog-data:

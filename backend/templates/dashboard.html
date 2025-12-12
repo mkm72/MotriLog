@@ -4,23 +4,25 @@
     <meta charset="UTF-8" />
     <title>MotriLog – Dashboard</title>
     <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}" />
+    <style>
+        .modal-actions { display: flex; justify-content: center; gap: 15px; margin-top: 20px; }
+        .btn-secondary { background: #f0f0f0; color: #333; border: 1px solid #ccc; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+        .btn-secondary:hover { background: #e0e0e0; }
+        .btn-telegram { background: #0088cc; color: white; border: none; padding: 10px 25px; border-radius: 20px; cursor: pointer; font-weight: 600; text-decoration: none; display: inline-block; }
+        .btn-telegram:hover { background: #0077b5; }
+        .btn-danger { background: #ff4757; color: white; border: none; padding: 10px 20px; border-radius: 20px; cursor: pointer; font-weight: 600; }
+    </style>
   </head>
-
   <body class="dashboard-page">
     <div class="bg-image"></div>
 
     <header class="app-header">
-      <div class="brand-logo" onclick="window.location.href='/'" style="cursor: pointer">
-        MotriLog
-      </div>
+      <div class="brand-logo" onclick="window.location.href='/'" style="cursor: pointer">MotriLog</div>
       <div class="header-buttons">
-        
         {% if user_role == 'admin' %}
-        <a href="/admin" class="btn-workshops" style="background: #ff4757; border: none; margin-right: 10px;">
-             Admin Panel
-        </a>
+        <a href="/admin" class="btn-workshops" style="background: #ff4757; border: none; margin-right: 10px; text-decoration: none; padding: 8px 16px; border-radius: 20px; color: white; font-size: 14px;">Admin Panel</a>
         {% endif %}
-        
+        <button id="connect-tg-btn" class="btn-ghost" style="border-color: #0088cc; color: #0088cc; margin-right: 10px;">✈️ Connect Telegram</button>
         <a href="/workshops" class="btn-workshops">🔧 Workshops</a>
         <button id="logout-btn" class="btn-ghost">Logout</button>
       </div>
@@ -37,6 +39,32 @@
         </div>
       </section>
     </main>
+
+    <div id="tg-modal" class="modal">
+        <div class="modal-content">
+            <span class="close-modal">&times;</span>
+            <h2 style="color: #0088cc; text-align: center;">Connect Telegram</h2>
+            <p style="text-align: center; color: #555;">Link your account to receive alerts from <strong style="color: #0088cc;">@motrilog_bot</strong></p>
+            <div style="background: #f0f8ff; padding: 15px; border-radius: 8px; border: 1px dashed #0088cc; text-align: center; margin: 20px 0;">
+                <code id="tg-command" style="font-size: 1.2em; font-weight: bold; color: #333;">...</code>
+            </div>
+            <div class="modal-actions">
+                <button id="btn-open-tg" class="btn-telegram">🚀 Open App</button>
+                <button id="btn-copy-cmd" class="btn-secondary">📋 Copy Command</button>
+            </div>
+        </div>
+    </div>
+
+    <div id="unlink-modal" class="modal">
+        <div class="modal-content">
+            <h2 style="color: #333;">Disconnect Telegram?</h2>
+            <p style="color: #666;">You will stop receiving maintenance alerts and 2FA codes.</p>
+            <div class="modal-actions" style="justify-content: flex-end;">
+                <button id="btn-cancel-unlink" class="btn-secondary">Cancel</button>
+                <button id="btn-confirm-unlink" class="btn-danger">Yes, Disconnect</button>
+            </div>
+        </div>
+    </div>
 
     <script src="{{ url_for('static', filename='js/auth.js') }}"></script>
     <script src="{{ url_for('static', filename='js/dashboard.js') }}"></script>

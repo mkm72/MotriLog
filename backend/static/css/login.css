@@ -1,4 +1,3 @@
-/* ============= VARIABLES ============= */
 :root {
     --white: #FFFFFF;
     --input-bg: #F5F5F7;
@@ -8,7 +7,6 @@
     --font: "Inter", sans-serif;
 }
 
-/* ============= GLOBAL ============= */
 body.login-page {
     margin: 0;
     font-family: var(--font);
@@ -21,7 +19,7 @@ body.login-page {
     position: relative;
 }
 
-/* ============= TEXT LOGO (MotriLog) ============= */
+/* LOGO (Top Left) */
 .text-logo {
     position: absolute;
     top: 24px;
@@ -31,28 +29,25 @@ body.login-page {
     color: white;
     text-decoration: none;
     cursor: pointer;
-    letter-spacing: 0.5px;
     z-index: 5;
     transition: 0.2s ease;
 }
+.text-logo:hover { opacity: 0.8; }
 
-.text-logo:hover {
-    opacity: 0.8;
-}
-
-/* ============= LOGIN CARD ============= */
+/* CARD (White, Right Side) */
 .login-card {
     position: absolute;
-    right: 5%;
+    right: 5%; /* Aligns to right */
     top: 50%;
     transform: translateY(-50%);
     width: 380px;
-
-    background: rgba(255, 255, 255, 0.96);
+    
+    background: rgba(255, 255, 255, 0.96); /* White Background */
     padding: 35px;
     border-radius: 20px;
-
     box-shadow: 0 6px 30px rgba(0, 0, 0, 0.25);
+    
+    color: #111; /* Dark Text */
 }
 
 .title {
@@ -62,12 +57,10 @@ body.login-page {
     color: #111;
 }
 
-/* ============= FORM ============= */
-.form-group {
-    margin-bottom: 16px;
-}
+.form-group { margin-bottom: 16px; }
 
 .input-label {
+    display: block;
     font-size: 14px;
     margin-bottom: 6px;
     color: #444;
@@ -81,49 +74,38 @@ input {
     border: 1px solid #ddd;
     border-radius: var(--radius);
     font-size: 15px;
+    box-sizing: border-box; 
+    color: #111;
 }
 
-input::placeholder {
-    color: var(--placeholder);
+input:focus {
+    outline: none;
+    border-color: var(--blue);
+    background: #fff;
 }
-.password-toggle {
-    position: absolute;
-    top: 53%;
-    right: 20px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    
-    color: #777;
-}
-.password-container input {
-    width: 100%;
-    padding-right: 40px !important;}
 
-/* ============= BUTTON ============= */
+input::placeholder { color: var(--placeholder); }
+
 .btn-primary {
     width: 100%;
     height: 48px;
     border-radius: var(--radius);
     border: none;
     margin-top: 10px;
-
     background: linear-gradient(90deg, #0AC5D4, #007AFF);
     color: white;
     font-size: 16px;
     font-weight: 600;
-
     cursor: pointer;
 }
 
-.btn-primary:hover {
-    opacity: 0.9;
-}
+.btn-primary:hover { opacity: 0.9; }
 
-/* ============= REGISTER TEXT ============= */
 .register-text {
     text-align: center;
     margin-top: 18px;
     font-size: 14px;
+    color: #444;
 }
 
 .register-text a {

@@ -1,239 +1,114 @@
 console.log("AUTH.JS LOADED!");
 
-// Note: API_BASE_URL is usually defined in the HTML or defaults to relative path.
-// If not defined, we assume relative path.
-const BASE_URL_PREFIX = typeof API_BASE_URL !== 'undefined' ? API_BASE_URL : "";
+// Define API_BASE_URL here (Single Source of Truth)
+const API_BASE_URL = window.location.origin;
 
-// ------------------------------------------------------------
-// LOGIN
-// ------------------------------------------------------------
 async function handle_login_submit(event) {
   event.preventDefault();
+  
+  const btn = event.target.querySelector("button[type='submit']");
+  if (!btn) return; // Safety check
 
-  const emailInput = document.getElementById("login-email");
-  const passwordInput = document.getElementById("login-password");
+  const originalText = btn.innerText;
+  btn.innerText = "Checking...";
+  btn.disabled = true;
+
+  const email = document.getElementById("login-email").value.trim();
+  const password = document.getElementById("login-password").value;
   const errorEl = document.getElementById("login-error");
 
-  if (errorEl) {
-    errorEl.hidden = true;
-    errorEl.textContent = "";
-  }
-
-  const payload = {
-    email: emailInput.value.trim(),
-    password: passwordInput.value,
-  };
+  if(errorEl) errorEl.style.display = "none";
 
   try {
-    const response = await fetch(`${BASE_URL_PREFIX}/api/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/login`, {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       credentials: "include",
-      body: JSON.stringify(payload),
+      body: JSON.stringify({ email, password }),
     });
 
     const data = await response.json().catch(() => ({}));
 
-    if (!response.ok) {
-      const msg = data.message || data.detail || "Login failed.";
-      if (errorEl) {
-        errorEl.textContent = msg;
-        errorEl.hidden = false;
-      }
-      return;
+    // 2FA Trigger
+    if (response.status === 202 && data.status === "2fa_required") {
+        btn.innerText = originalText;
+        btn.disabled = false;
+        open2FAModal(); // Show the white popup
+        return;
     }
-
-    // --- NEW REDIRECT LOGIC ---
-    if (data.user && data.user.role === 'admin') {
-        console.log("Admin login detected. Redirecting to Admin Dashboard...");
-        window.location.href = "/admin";
-    } else {
-        console.log("User login detected. Redirecting to Dashboard...");
-        window.location.href = "/dashboard";
-    }
-    // --------------------------
-
-  } catch (err) {
-    console.error("Login error:", err);
-    if (errorEl) {
-      errorEl.textContent = "Network error. Please try again.";
-      errorEl.hidden = false;
-    }
-  }
-}
-
-// ------------------------------------------------------------
-// REGISTER
-// ------------------------------------------------------------
-async function handle_register_submit(event) {
-  event.preventDefault();
-
-  const firstNameInput = document.getElementById("reg-first-name") || document.getElementById("first-name");
-  const lastNameInput = document.getElementById("reg-last-name") || document.getElementById("last-name");
-  const emailInput = document.getElementById("reg-email");
-  const phoneInput = document.getElementById("reg-phone");
-  const passwordInput = document.getElementById("reg-password");
-  const confirmPasswordInput = document.getElementById("reg-password-confirm");
-  const termsCheckbox = document.getElementById("terms");
-  const errorEl = document.getElementById("register-error");
-
-  if (errorEl) {
-    errorEl.hidden = true;
-    errorEl.textContent = "";
-  }
-
-  let hasError = false;
-  const nameRegex = /[0-9]/;
-
-  if (nameRegex.test(firstNameInput.value) || nameRegex.test(lastNameInput.value)) {
-    if (errorEl) {
-        errorEl.textContent = "First or Last Name cannot contain numbers.";
-        errorEl.hidden = false;
-    }
-    hasError = true;
-  }
-
-  if (passwordInput.value.length < 8) {
-    if (errorEl) {
-        errorEl.textContent = "Password must be at least 8 characters long.";
-        errorEl.hidden = false;
-    }
-    hasError = true;
-  }
-
-  if (passwordInput.value !== confirmPasswordInput.value) {
-    if (errorEl) {
-        errorEl.textContent = "Passwords do not match.";
-        errorEl.hidden = false;
-    }
-    hasError = true;
-  }
-
-  if (termsCheckbox && !termsCheckbox.checked) {
-    if (errorEl) {
-        errorEl.textContent = "You must agree to the terms.";
-        errorEl.hidden = false;
-    }
-    hasError = true;
-  }
-
-  if (hasError) return;
-
-  const payload = {
-    email: emailInput.value.trim(),
-    password_hash: passwordInput.value,
-    full_name: `${firstNameInput.value.trim()} ${lastNameInput.value.trim()}`,
-    phone_number: phoneInput ? phoneInput.value.trim() : null,
-  };
-
-  try {
-    const response = await fetch(`${BASE_URL_PREFIX}/api/register`, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      credentials: "include",
-      body: JSON.stringify(payload),
-    });
-
-    const data = await response.json().catch(() => ({}));
 
     if (!response.ok) {
-      let msg = data.message || data.detail || "Registration failed.";
-      
-      if (typeof data === "object" && !data.message && !data.detail) {
-         // Flatten validation errors if any
-         msg = JSON.stringify(data).replace(/[{"}\[\]]/g, "").replace(/:/g, ": ");
-      }
-
-      if (msg.includes("Email already exists")) {
-        msg = "This email address is already registered. Please login.";
-      }
-
-      if (errorEl) {
-        errorEl.textContent = msg;
-        errorEl.hidden = false;
-      }
-      return;
+        if (errorEl) {
+            errorEl.textContent = data.message || data.error || "Login failed";
+            errorEl.style.display = "block";
+        }
+        btn.innerText = originalText;
+        btn.disabled = false;
+        return;
     }
 
     // Success
-    window.location.href = "/login";
+    window.location.href = (data.user && data.user.role === 'admin') ? "/admin" : "/dashboard";
+
   } catch (err) {
-    console.error("Register error:", err);
-    if (errorEl) {
-      errorEl.textContent = "Network error. Please try again.";
-      errorEl.hidden = false;
-    }
+    console.error(err);
+    if(errorEl) { errorEl.textContent = "Network error"; errorEl.style.display="block"; }
+    btn.innerText = originalText;
+    btn.disabled = false;
   }
 }
 
-// ------------------------------------------------------------
-// LOGOUT
-// ------------------------------------------------------------
+// 2FA Helper
+function open2FAModal() {
+    const modal = document.getElementById("two-factor-modal");
+    const input = document.getElementById("2fa-code-input");
+    const verifyBtn = document.getElementById("btn-2fa-ok");
+    const cancelBtn = document.getElementById("btn-2fa-cancel");
+
+    if(!modal) return;
+
+    modal.style.display = "flex";
+    input.value = "";
+    input.focus();
+
+    const submit = async () => {
+        const code = input.value.trim();
+        if(!code) return;
+        
+        verifyBtn.innerText = "...";
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/verify-2fa`, {
+                method: "POST", headers: {"Content-Type":"application/json"}, credentials: "include",
+                body: JSON.stringify({ code })
+            });
+            const d = await res.json();
+            if (res.ok) window.location.href = (d.user.role==='admin')?"/admin":"/dashboard";
+            else { alert(d.error || "Invalid"); verifyBtn.innerText="Verify"; }
+        } catch(e) { alert("Error"); verifyBtn.innerText="Verify"; }
+    };
+
+    // Replace button to clear old listeners
+    const newVerify = verifyBtn.cloneNode(true);
+    verifyBtn.parentNode.replaceChild(newVerify, verifyBtn);
+    newVerify.onclick = submit;
+
+    // Enter key support
+    input.onkeydown = (e) => { if(e.key === "Enter") submit(); };
+    cancelBtn.onclick = () => { modal.style.display = "none"; };
+}
+
+// Global Logout Logic (Safe to be here)
 async function logout() {
-  try {
-    await fetch(`${BASE_URL_PREFIX}/api/logout`, {
-      method: "POST",
-      credentials: "include",
-    });
-  } catch (e) {
-    console.warn("Logout request failed:", e);
-  }
-  window.location.href = "/login";
+    try { await fetch(`${API_BASE_URL}/api/logout`, { method: "POST", credentials: "include" }); } 
+    catch (e) { console.warn(e); }
+    window.location.href = "/login";
 }
 
-// ------------------------------------------------------------
-// Check authentication for Main_Page navbar
-// ------------------------------------------------------------
-async function updateHomeNavbar() {
-  const loginBtn = document.getElementById("home-login-btn");
-  const registerBtn = document.getElementById("home-register-btn");
-
-  if (!loginBtn) return;
-
-  try {
-    const res = await fetch(`${BASE_URL_PREFIX}/api/profile`, {
-      credentials: "include",
-    });
-
-    if (res.ok) {
-      const userData = await res.json();
-      
-      // Dynamic Redirect based on role
-      const targetUrl = (userData.role === 'admin') ? "/admin" : "/dashboard";
-
-      loginBtn.textContent = "Dashboard";
-      loginBtn.href = targetUrl;
-      
-      if (registerBtn) registerBtn.style.display = "none";
-    } else {
-      loginBtn.textContent = "Login";
-      loginBtn.href = "/login";
-      if (registerBtn) registerBtn.style.display = "inline-block";
-    }
-  } catch (err) {
-    console.warn("Auth check failed:", err);
-  }
-}
-
-// ------------------------------------------------------------
-// EVENT LISTENERS
-// ------------------------------------------------------------
 document.addEventListener("DOMContentLoaded", () => {
   const loginForm = document.getElementById("login-form");
-  if (loginForm)
-    loginForm.addEventListener("submit", handle_login_submit);
+  if (loginForm) loginForm.addEventListener("submit", handle_login_submit);
 
-  const registerForm = document.getElementById("register-form");
-  if (registerForm)
-    registerForm.addEventListener("submit", handle_register_submit);
-
-  const logoutButtons = document.querySelectorAll("#logout-btn");
-  logoutButtons.forEach((btn) => {
-    btn.addEventListener("click", (e) => {
-      e.preventDefault();
-      logout();
-    });
-  });
-
-  updateHomeNavbar();
+  // Attach logout to any button with id="logout-btn"
+  const logoutBtns = document.querySelectorAll("#logout-btn");
+  logoutBtns.forEach(btn => btn.onclick = (e) => { e.preventDefault(); logout(); });
 });

@@ -6,6 +6,7 @@ from backend.models import db, vehicle_schema, manufacturer_schema
 import os
 import uuid
 from werkzeug.utils import secure_filename
+from backend.utils import send_telegram_message
 
 vehicles_bp = Blueprint('vehicles_bp', __name__)
 
