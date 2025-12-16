@@ -4,7 +4,6 @@ from bson.objectid import ObjectId
 
 web_bp = Blueprint('web_bp', __name__)
 
-# --- Helper to get user role ---
 def get_current_user_role():
     user_id = session.get('user_id')
     if user_id:

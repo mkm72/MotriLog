@@ -1,185 +1,88 @@
-/* ============= VARIABLES ============= */
 :root {
-    --white: #FFFFFF;
-    --input-bg: #F5F5F7;
-    --placeholder: #8E8E93;
-    --blue: #007AFF;
-    --radius: 10px;
-    --font: "Inter", sans-serif;
+    --bg-light: #F5F5F7;
+    --text-dark: #111;
+    --text-muted: #666;
+    --blue-primary: #00AEEF;
+    --blue-dark: #007AFF;
+    --red-error: #ff3b30;
+    --radius: 8px;
+    --font: "Inter", -apple-system, BlinkMacSystemFont, sans-serif;
 }
 
-/* ============= GLOBAL ============= */
 body.register-page {
     margin: 0;
     font-family: var(--font);
-    background-image: url("../img/car-interior.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background: url("../img/car-interior.jpg") center/cover no-repeat;
     height: 100vh;
     overflow: hidden;
     position: relative;
 }
 
-/* ============= MotriLog TEXT LOGO ============= */
-.text-logo {
-    position: absolute;
-    top: 24px;
-    left: 32px;
-    font-size: 32px;
-    font-weight: 800;
-    color: white;
-    text-decoration: none;
-    letter-spacing: 0.5px;
-    cursor: pointer;
-    z-index: 5;
+/* --- TINT REMOVED --- */
+.bg-overlay {
+    display: none; 
 }
 
-.text-logo:hover {
-    opacity: 0.8;
-}
-
-/* ============= REGISTER CARD (RIGHT SIDE) ============= */
+/* CARD POSITIONED TO THE RIGHT */
 .register-card {
     position: absolute;
-    right: 5%;
+    right: 8%;
     top: 50%;
     transform: translateY(-50%);
+    z-index: 1;
+    background: #FFFFFF;
     width: 450px;
-
-    background: rgba(255, 255, 255, 0.96);
-    padding: 40px;
-    border-radius: 20px;
-
-    box-shadow: 0 6px 30px rgba(0, 0, 0, 0.25);
+    padding: 35px;
+    border-radius: 16px;
+    box-shadow: 0 20px 60px rgba(0,0,0,0.3);
 }
 
-.title {
-    margin: 0 0 24px;
-    font-size: 30px;
-    font-weight: 700;
-    color: #111;
+.title { margin: 0 0 25px 0; font-size: 26px; font-weight: 800; color: var(--text-dark); }
+
+.form-row { display: flex; gap: 12px; margin-bottom: 12px; }
+.form-group { margin-bottom: 12px; }
+.form-group.half { flex: 1; }
+
+.input-label { display: block; font-size: 13px; color: #444; margin-bottom: 6px; font-weight: 500; }
+
+input[type="text"], input[type="email"], input[type="password"], input[type="tel"] {
+    width: 100%; height: 42px; padding: 0 12px;
+    background: var(--bg-light); border: 1px solid #E5E5EA;
+    border-radius: var(--radius); font-size: 14px; box-sizing: border-box;
+    transition: 0.2s;
+}
+input:focus { outline: none; border-color: var(--blue-primary); background: #fff; }
+
+/* SVG Password Icons */
+.relative { position: relative; }
+.eye-icon {
+    position: absolute; right: 12px; top: 32px;
+    cursor: pointer; 
+    width: 20px; height: 20px;
+    display: flex; align-items: center; justify-content: center;
+}
+.eye-icon svg {
+    width: 20px; height: 20px;
+    stroke: #999; fill: none; transition: stroke 0.2s;
+}
+.eye-icon:hover svg { stroke: var(--blue-dark); }
+
+.field-error {
+    color: var(--red-error); font-size: 11px; display: block; margin-top: 3px; min-height: 14px;
 }
 
-/* ============= FORM GRID ============= */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 18px;
-}
+.checkbox-group { display: flex; align-items: center; gap: 8px; margin: 15px 0; font-size: 12px; color: var(--text-dark); }
+input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--blue-primary); }
 
-.form-group {
-    display: flex;
-    flex-direction: column;
-}
-
-.full {
-    grid-column: 1 / -1;
-}
-
-.input-label {
-    font-size: 14px;
-    margin-bottom: 6px;
-    color: #333;
-}
-
-/* ============= INPUTS ============= */
-input {
-    height: 48px;
-    padding: 0 14px;
-    background: var(--input-bg);
-    border: 1px solid #ddd;
-    border-radius: var(--radius);
-    font-size: 15px;
-}
-
-input::placeholder {
-    color: var(--placeholder);
-}
-
-/* PASSWORD EYE ICON */
-.password-container {
-    position: relative;
-}
-
-.password-toggle {
-    position: absolute;
-    top: 50%;
-    right: 10px;
-    transform: translateY(-50%);
-    cursor: pointer;
-    font-size: 18px;
-    color: #777;
-}
-.password-container input {
-    padding-right: 40px !important;}
-
-/* ============= TERMS CHECKBOX ============= */
-
-.form-grid .form-group.terms {
-    grid-column: 1 / -1; 
-    width: auto; 
-    height: auto;
-    margin-bottom: 20px; 
-}
-
-.form-group.terms label {
- 
-    display: flex; 
-    align-items: center; 
-    flex-direction: row; 
-    font-size: 14px; 
-    cursor: pointer;
-    font-weight: normal; 
-}
-
-.form-group.terms input[type="checkbox"] {
-    flex-shrink: 0; 
-    height: 16px;
-    width: 16px;
-    margin-right: 10px; 
-}
-
-.form-group.terms span {
-    line-height: 1.4;  
-    flex-grow: 1; 
-}
-
-/* ============= BUTTON ============= */
 .btn-primary {
-    height: 48px;
-    border-radius: var(--radius);
-    border: none;
-    margin-top: 5px;
-
-    background: linear-gradient(90deg, #0AC5D4, #007AFF);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-
-    cursor: pointer;
+    width: 100%; height: 48px; border: none; border-radius: var(--radius);
+    background: linear-gradient(90deg, var(--blue-primary), var(--blue-dark));
+    color: white; font-size: 15px; font-weight: 700; cursor: pointer;
+    text-transform: uppercase; letter-spacing: 0.5px;
 }
+.btn-primary:hover { opacity: 0.9; }
 
-.btn-primary:hover {
-    opacity: 0.9;
-}
+.login-text { text-align: center; margin-top: 15px; font-size: 13px; color: var(--text-muted); }
+.login-text a { color: var(--blue-dark); text-decoration: none; font-weight: 600; }
 
-/* ============= LOGIN LINK ============= */
-.login-text {
-    text-align: center;
-    margin-top: 20px;
-    font-size: 14px;
-}
-
-.login-text a {
-    color: var(--blue);
-    text-decoration: none;
-    font-weight: 600;
-}
-
-/* ============= ERROR TEXT ============= */
-.error-text,
-.error-message {
-    color: red;
-    font-size: 14px;
-}
+.error-text { color: var(--red-error); font-size: 13px; text-align: center; margin-bottom: 15px; }

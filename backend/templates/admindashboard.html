@@ -19,9 +19,9 @@
         </div>
     </header>
 
-    <main class="content">
+    <main class="content" style="flex-direction: column; align-items: center; gap: 30px;">
         
-        <h1 class="title" style="margin-top: 0;">Admin Tools</h1>
+        <h1 class="title" style="margin-top: 0; color: white;">Admin Tools</h1>
 
         <section class="dashboard-card">
             <div class="card-header">
@@ -35,6 +35,29 @@
                     </div>
                     <button type="submit" class="btn-primary-pill" style="width: 100%; border: none; cursor: pointer; background: #28a745;">Save Manufacturer</button>
                 </form>
+            </div>
+        </section>
+
+        <section class="dashboard-card">
+            <div class="card-header">
+                <h2 class="title" style="font-size: 1.5rem;">User Management</h2>
+            </div>
+            <div style="overflow-x: auto; padding: 20px;">
+                <table style="width: 100%; border-collapse: collapse; text-align: left; font-size: 14px;">
+                    <thead>
+                        <tr style="border-bottom: 2px solid #eee;">
+                            <th style="padding: 12px; color: #555;">Name</th>
+                            <th style="padding: 12px; color: #555;">Email</th>
+                            <th style="padding: 12px; color: #555;">Vehicles</th>
+                            <th style="padding: 12px; color: #555;">Telegram</th>
+                            <th style="padding: 12px; color: #555;">Status</th>
+                            <th style="padding: 12px; color: #555;">Action</th>
+                        </tr>
+                    </thead>
+                    <tbody id="users-table-body">
+                        <tr><td colspan="6" style="padding:20px; text-align:center;">Loading users...</td></tr>
+                    </tbody>
+                </table>
             </div>
         </section>
 

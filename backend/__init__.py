@@ -14,7 +14,7 @@ from .routes.workshops import workshops_bp
 def create_app():
     app = Flask(__name__)
 
-    app.config["SECRET_KEY"] = "motarilog-secret-key-2024" # Change in production
+    app.config["SECRET_KEY"] = "motarilog-secret-key-2024"
     app.config["SESSION_TYPE"] = "mongodb"
     app.config["SESSION_MONGODB"] = db.client
     app.config["SESSION_MONGODB_DB"] = "motarilog"

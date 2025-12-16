@@ -7,269 +7,100 @@
     --font: "Inter", sans-serif;
 }
 
-/* FULL BACKGROUND IMAGE */
 body.add-vehicle-page {
-    margin: 0;
-    padding: 0;
-    height: 100vh;
-    /* Fallback color if image fails to load */
+    margin: 0; padding: 0; height: 100vh;
     background-color: #2c2c2e; 
     background-image: url("../img/car-interior.jpg");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
+    background-size: cover; background-position: center; background-repeat: no-repeat;
     font-family: var(--font);
+    overflow: hidden;
+    position: relative;
 }
 
-/* LOGO (TOP LEFT) */
-.logo-box {
-    position: absolute;
-    top: 24px;
-    left: 32px;
-    z-index: 5;
-}
+/* LOGO */
+.logo-box { position: absolute; top: 24px; left: 32px; z-index: 5; }
+.logo-text { font-size: 28px; font-weight: 800; color: white; cursor: pointer; text-shadow: 0 2px 10px rgba(0,0,0,0.3); }
 
-.logo-text {
-    font-size: 28px;
-    font-weight: 800;
-    color: white;
-    cursor: pointer;
-    text-shadow: 0 2px 10px rgba(0,0,0,0.3);
-}
-
-/* FLOATING FORM CARD */
+/* CARD - RIGHT SIDE */
 .form-card {
-    position: absolute;
-    right: 5%;
-    top: 50%;
-    transform: translateY(-50%);
-    width: 470px;
-    
-    /* Limit height and scroll if screen is small */
-    max-height: 90vh;
-    overflow-y: auto;
-
-    padding: 35px;
-    background: rgba(255, 255, 255, 0.97);
-    border-radius: 20px;
-    box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
+    position: absolute; right: 5%; top: 50%; transform: translateY(-50%);
+    width: 470px; max-height: 90vh; overflow-y: auto;
+    padding: 35px; background: rgba(255, 255, 255, 0.97);
+    border-radius: 20px; box-shadow: 0 8px 35px rgba(0, 0, 0, 0.25);
 }
 
-/* BACK BUTTON */
 .back-link {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-
-    background: rgba(255,255,255,0.7);
-    border: 1px solid rgba(0,0,0,0.15);
-
-    padding: 8px 16px;
-    border-radius: 12px;
-
-    font-size: 14px;
-    font-weight: 500;
-    color: #007aff;
-    text-decoration: none;
-
+    display: inline-flex; align-items: center; gap: 6px;
+    background: rgba(255,255,255,0.7); border: 1px solid rgba(0,0,0,0.15);
+    padding: 8px 16px; border-radius: 12px;
+    font-size: 14px; font-weight: 500; color: #007aff; text-decoration: none;
     transition: 0.2s ease-in-out;
 }
+.back-link:hover { background: rgba(255,255,255,0.95); }
+.back-link::before { content: "\2190"; font-size: 16px; }
 
-.back-link:hover {
-    background: rgba(255,255,255,0.95);
-}
+.title { margin-top: 12px; margin-bottom: 22px; font-size: 30px; font-weight: 700; }
 
-/* Arrow character for back link (Left Arrow) */
-.back-link::before {
-    content: "\2190"; 
-    font-size: 16px;
-}
+.form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 22px 22px; }
+.full { grid-column: span 2; }
+.form-group { display: flex; flex-direction: column; gap: 6px; }
 
-/* TITLE */
-.title {
-    margin-top: 12px;
-    margin-bottom: 22px;
-    font-size: 30px;
-    font-weight: 700;
-}
-
-/* GRID LAYOUT */
-.form-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 22px 22px;
-}
-
-.full {
-    grid-column: span 2;
-}
-
-.form-group {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* INPUTS & SELECTS */
 input, select {
-    height: 48px;
-    padding: 0 12px;
-    border-radius: var(--radius);
-    border: 1px solid #ccc;
-    background: var(--input-bg);
-    font-size: 15px;
-    width: 100%;
-    box-sizing: border-box;
+    height: 48px; padding: 0 12px; border-radius: var(--radius);
+    border: 1px solid #ccc; background: var(--input-bg);
+    font-size: 15px; width: 100%; box-sizing: border-box;
 }
+input:focus { outline: none; border-color: var(--blue); background: #fff; }
 
-input::placeholder {
-    color: var(--placeholder);
-}
-
-/* BUTTON */
 .btn-primary {
-    width: 100%;
-    height: 48px;
-    border-radius: 12px;
-    border: none;
+    width: 100%; height: 48px; border-radius: 12px; border: none;
     background: linear-gradient(90deg, #0ac5d4, #007aff);
-    color: white;
-    font-size: 16px;
-    font-weight: 600;
-    cursor: pointer;
-    margin-top: 10px;
+    color: white; font-size: 16px; font-weight: 600; cursor: pointer; margin-top: 10px;
 }
+.btn-primary:hover { opacity: 0.9; }
 
-.btn-primary:hover {
-    opacity: 0.9;
-}
+.error-text { color: red; font-size: 14px; margin-bottom: 10px; display: block; text-align:center;}
 
-/* ERROR MESSAGE */
-.error-text {
-    color: red;
-    font-size: 14px;
-    margin-bottom: 10px;
-    display: block;
-}
-
-/* --- CUSTOM DROPDOWN STYLES --- */
-
-.custom-dropdown {
-    position: relative;
-    width: 100%;
-}
-
+/* CUSTOM DROPDOWN */
+.custom-dropdown { position: relative; width: 100%; }
 .dropdown-btn {
-    height: 48px;
-    padding: 0 12px;
-    border-radius: var(--radius);
-    border: 1px solid #ccc;
-    background: var(--input-bg);
-    font-size: 15px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    cursor: pointer;
-    color: #333;
+    height: 48px; padding: 0 12px; border-radius: var(--radius);
+    border: 1px solid #ccc; background: var(--input-bg);
+    font-size: 15px; display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer; color: #333;
 }
-
 .dropdown-list {
-    position: absolute;
-    top: 105%;
-    left: 0;
-    width: 100%;
-    background: white;
-    border: 1px solid #ccc;
-    border-radius: 12px;
-    max-height: 250px;
-    overflow-y: auto;
-    z-index: 1000;
-    display: none; /* Hidden by default */
-    box-shadow: 0 4px 15px rgba(0,0,0,0.15);
+    position: absolute; top: 105%; left: 0; width: 100%;
+    background: white; border: 1px solid #ccc; border-radius: 12px;
+    max-height: 250px; overflow-y: auto; z-index: 1000;
+    display: none; box-shadow: 0 4px 15px rgba(0,0,0,0.15);
 }
-
-.dropdown-list.show {
-    display: block;
-}
-
+.dropdown-list.show { display: block; }
 .dropdown-item {
-    padding: 10px 12px;
-    display: flex;
-    align-items: center;
-    gap: 12px;
-    cursor: pointer;
-    border-bottom: 1px solid #f0f0f0;
-    transition: background 0.2s;
+    padding: 10px 12px; display: flex; align-items: center; gap: 12px;
+    cursor: pointer; border-bottom: 1px solid #f0f0f0; transition: background 0.2s;
 }
-
-.dropdown-item:last-child {
-    border-bottom: none;
-}
-
-.dropdown-item:hover {
-    background: #f5f5f7;
-}
-
+.dropdown-item:hover { background: #f5f5f7; }
 .maker-logo {
-    width: 28px;
-    height: 28px;
-    object-fit: contain;
-    background: white;
-    border-radius: 50%;
-    padding: 2px;
-    border: 1px solid #eee;
+    width: 28px; height: 28px; object-fit: contain;
+    background: white; border-radius: 50%; padding: 2px; border: 1px solid #eee;
 }
+#manual-maker-input { display: none; margin-top: 8px; border: 2px solid #007aff; }
 
-#manual-maker-input {
-    display: none;
-    margin-top: 8px;
-    border: 2px solid #007aff;
-}
-
-/* --- COLOR SWATCH STYLES --- */
-
-.color-swatches {
-    display: flex;
-    gap: 10px;
-    flex-wrap: wrap;
-    margin-top: 5px;
-}
-
+/* COLOR SWATCHES */
+.color-swatches { display: flex; gap: 10px; flex-wrap: wrap; margin-top: 5px; }
 .swatch {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-    cursor: pointer;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-    transition: transform 0.2s, box-shadow 0.2s;
-    position: relative;
-    box-sizing: border-box; /* Ensures border doesn't grow the circle */
+    width: 32px; height: 32px; border-radius: 50%; cursor: pointer;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1); transition: transform 0.2s, box-shadow 0.2s;
+    position: relative; box-sizing: border-box;
 }
-
-.swatch:hover {
-    transform: scale(1.1);
-}
-
-/* Selected State (Double Ring Effect) */
-.swatch.selected {
-    border: 2px solid white !important; 
-    box-shadow: 0 0 0 2px #007aff; 
-    transform: scale(1.1);
-}
-
-/* Style for the "Other" (+) button */
+.swatch:hover { transform: scale(1.1); }
+.swatch.selected { border: 2px solid white !important; box-shadow: 0 0 0 2px #007aff; transform: scale(1.1); }
 .other-swatch {
-    background: #f0f0f0;
-    color: #555;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    font-weight: bold;
-    font-size: 18px;
-    border: 1px dashed #999;
+    background: #f0f0f0; color: #555; display: flex; align-items: center; justify-content: center;
+    font-weight: bold; font-size: 18px; border: 1px dashed #999;
 }
+#custom-color-input { display: none; margin-top: 5px; border: 1px solid #007aff; }
 
-/* Manual color input (hidden by default) */
-#custom-color-input {
-    border: 1px solid #007aff;
-}
+.form-card::-webkit-scrollbar { width: 6px; }
+.form-card::-webkit-scrollbar-thumb { background: #ccc; border-radius: 3px; }

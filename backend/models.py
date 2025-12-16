@@ -171,7 +171,6 @@ manufacturer_schema = ManufacturerSchema() # NEW
 
 # --- Database Initialization ---
 
-# ... (Keep imports and schemas as they are) ...
 
 def initialize_database():
     try:

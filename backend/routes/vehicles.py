@@ -5,149 +5,66 @@ from marshmallow import ValidationError
 from backend.models import db, vehicle_schema, manufacturer_schema
 import os
 import uuid
-from werkzeug.utils import secure_filename
+
+from backend.services.prediction import prediction_engine
 
 vehicles_bp = Blueprint('vehicles_bp', __name__)
 
 ALLOWED_EXTENSIONS = {'png', 'jpg', 'jpeg', 'webp'}
 
 def allowed_file(filename):
-    return '.' in filename and \
-           filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
+    return '.' in filename and filename.rsplit('.', 1)[1].lower() in ALLOWED_EXTENSIONS
 
 # ---------------------------------------------------------
-# Get All Manufacturers (Public)
+# Get All Manufacturers
 # ---------------------------------------------------------
 @vehicles_bp.route('/manufacturers', methods=['GET'])
 def get_manufacturers():
     try:
-        # Get all makers, sorted by name
         makers = list(db.manufacturers.find().sort("name", 1))
         return jsonify([manufacturer_schema.dump(m) for m in makers]), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 500
 
 # ---------------------------------------------------------
-# Add Manufacturer (ADMIN ONLY)
-# ---------------------------------------------------------
-@vehicles_bp.route('/manufacturers', methods=['POST'])
-def add_manufacturer():
-    # 1. Check Login
-    user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
-
-    # 2. Check Admin Role
-    current_user = db.users.find_one({"_id": ObjectId(user_id)})
-    if not current_user or current_user.get('role') != 'admin':
-        return jsonify({'error': 'Forbidden: Admins only'}), 403
-
-    # 3. Process Request
-    data = request.get_json()
-    if not data or 'name' not in data:
-        return jsonify({'error': 'Manufacturer name is required'}), 400
-
-    maker_name = data['name'].strip()
-    logo_url = data.get('logo_url')  # Optional
-
-    # Check if exists (case-insensitive)
-    existing = db.manufacturers.find_one({
-        "name": {"$regex": f"^{maker_name}$", "$options": "i"}
-    })
-
-    if existing:
-        # Optional: Update the logo if it exists but has none
-        if logo_url and not existing.get('logo_url'):
-            db.manufacturers.update_one(
-                {"_id": existing['_id']},
-                {"$set": {"logo_url": logo_url}}
-            )
-            return jsonify({'message': 'Manufacturer updated with new logo'}), 200
-        return jsonify({'error': 'Manufacturer already exists'}), 409
-
-    # Create new
-    new_maker = {
-        "name": maker_name,
-        "logo_url": logo_url,
-        "created_at": datetime.utcnow()
-    }
-
-    try:
-        result = db.manufacturers.insert_one(new_maker)
-        new_maker['_id'] = result.inserted_id
-        return jsonify(manufacturer_schema.dump(new_maker)), 201
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
-
-# ---------------------------------------------------------
-# Get All User's Vehicles
+# Get User's Vehicles
 # ---------------------------------------------------------
 @vehicles_bp.route('/vehicles', methods=['GET'])
 def get_vehicles():
     user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
-    
+    if not user_id: return jsonify({'error': 'Unauthorized'}), 401
     try:
-        vehicles = list(db.vehicles.find({
-            'user_id': ObjectId(user_id),
-            'is_active': True
-        }))
-        vehicles_data = [vehicle_schema.dump(v) for v in vehicles]
-        return jsonify(vehicles_data), 200
-    except Exception as e:
-        return jsonify({'error': str(e)}), 500
+        vehicles = list(db.vehicles.find({'user_id': ObjectId(user_id), 'is_active': True}))
+        return jsonify([vehicle_schema.dump(v) for v in vehicles]), 200
+    except Exception as e: return jsonify({'error': str(e)}), 500
 
 # ---------------------------------------------------------
-# Add New Vehicle (Auto-adds Manufacturer if missing)
+# Add New Vehicle
 # ---------------------------------------------------------
 @vehicles_bp.route('/vehicles', methods=['POST'])
 def add_vehicle():
     user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
+    if not user_id: return jsonify({'error': 'Unauthorized'}), 401
     
-    # 1. Handle Input (Multipart vs JSON)
     if request.content_type.startswith('multipart/form-data'):
         json_data = request.form.to_dict()
+        for key, value in json_data.items():
+            if value == "" or value == "null": json_data[key] = None
     else:
         json_data = request.get_json()
 
-    if not json_data:
-        return jsonify({'error': 'No input data provided'}), 400
-    
+    if not json_data: return jsonify({'error': 'No input data'}), 400
     json_data['user_id'] = user_id
     
-    # 2. Validate Text Data
     try:
         data = vehicle_schema.load(json_data)
     except ValidationError as err:
         return jsonify(err.messages), 400
     
-    # 3. Check License Plate
-    existing_vehicle = db.vehicles.find_one({'license_plate': data['license_plate']})
-    if existing_vehicle:
-        return jsonify({'error': 'License plate already registered'}), 409
+    existing = db.vehicles.find_one({'license_plate': data['license_plate']})
+    if existing: return jsonify({'error': 'License plate already registered'}), 409
 
-    # --- Check & Add Manufacturer (Auto-add without logo) ---
-    maker_name = data['manufacturer'].strip()
-    existing_maker = db.manufacturers.find_one({
-        "name": {"$regex": f"^{maker_name}$", "$options": "i"}
-    })
-    
-    if not existing_maker:
-        try:
-            db.manufacturers.insert_one({
-                "name": maker_name,
-                "logo_url": None, 
-                "created_at": datetime.utcnow()
-            })
-            print(f"🆕 Auto-added new manufacturer: {maker_name}")
-        except Exception as e:
-            print(f"Error adding maker: {e}")
-    # -------------------------------------------
-
-    # 4. Handle Image Upload
+    # Image Upload
     image_db_path = None
     if 'image' in request.files:
         file = request.files['image']
@@ -155,20 +72,13 @@ def add_vehicle():
             try:
                 ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{ext}"
-                
-                base_upload_path = current_app.config['UPLOAD_FOLDER']
-                user_folder_path = os.path.join(base_upload_path, str(user_id))
-                os.makedirs(user_folder_path, exist_ok=True)
-                
-                file.save(os.path.join(user_folder_path, unique_filename))
+                base_path = current_app.config['UPLOAD_FOLDER']
+                os.makedirs(os.path.join(base_path, str(user_id)), exist_ok=True)
+                file.save(os.path.join(base_path, str(user_id), unique_filename))
                 image_db_path = f"{user_id}/{unique_filename}"
-            except Exception as e:
-                print(f"Image save failed: {e}")
+            except Exception as e: print(f"Image Error: {e}")
 
-    # 5. Prepare Database Document
-    if 'current_mileage' not in data:
-        data['current_mileage'] = data['initial_mileage']
-    
+    # Create Document
     vehicle_doc = {
         'user_id': ObjectId(user_id),
         'manufacturer': data['manufacturer'],
@@ -188,71 +98,106 @@ def add_vehicle():
     
     try:
         result = db.vehicles.insert_one(vehicle_doc)
-        new_vehicle = db.vehicles.find_one({'_id': result.inserted_id})
-        return jsonify({
-            'message': 'Vehicle added successfully',
-            'vehicle': vehicle_schema.dump(new_vehicle)
-        }), 201
+        new_id = result.inserted_id
+        # Trigger Predictions
+        prediction_engine.calculate_predictions(new_id)
+        return jsonify({'message': 'Vehicle added', 'vehicle_id': str(new_id)}), 201
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # ---------------------------------------------------------
-# Update Vehicle
+# UPDATE VEHICLE 
 # ---------------------------------------------------------
 @vehicles_bp.route('/vehicles/<string:vehicle_id>', methods=['PUT'])
 def update_vehicle(vehicle_id):
     user_id = session.get('user_id')
-    if not user_id:
-        return jsonify({'error': 'Unauthorized'}), 401
+    if not user_id: return jsonify({'error': 'Unauthorized'}), 401
 
-    if request.content_type.startswith('multipart/form-data'):
+    # Handle FormData or JSON
+    if request.content_type and request.content_type.startswith('multipart/form-data'):
         data = request.form.to_dict()
     else:
         data = request.get_json() or {}
 
-    allowed_fields = ['manufacturer', 'model', 'year', 'color', 'license_plate', 'vin', 'purchase_date', 'initial_mileage']
-    update_data = {k: v for k, v in data.items() if k in allowed_fields}
+    # Define allowed fields to update
+    allowed = ['license_plate', 'color', 'year', 'current_mileage', 'vin', 'manufacturer', 'model']
+    update_data = {k: v for k, v in data.items() if k in allowed}
 
+    # Handle Image Update
     if 'image' in request.files:
         file = request.files['image']
         if file and allowed_file(file.filename):
             try:
                 ext = file.filename.rsplit('.', 1)[1].lower()
                 unique_filename = f"{uuid.uuid4().hex}.{ext}"
-                
-                base_upload_path = current_app.config['UPLOAD_FOLDER']
-                user_folder_path = os.path.join(base_upload_path, str(user_id))
-                os.makedirs(user_folder_path, exist_ok=True)
-                
-                file.save(os.path.join(user_folder_path, unique_filename))
+                base_path = current_app.config['UPLOAD_FOLDER']
+                os.makedirs(os.path.join(base_path, str(user_id)), exist_ok=True)
+                file.save(os.path.join(base_path, str(user_id), unique_filename))
                 update_data['image_filename'] = f"{user_id}/{unique_filename}"
-            except Exception as e:
-                print(f"Error saving image: {e}")
+            except Exception as e: print(f"Image update failed: {e}")
 
     if not update_data and 'image' not in request.files:
-         return jsonify({'error': 'No valid fields to update'}), 400
+        return jsonify({'error': 'No fields to update'}), 400
 
     try:
-        if 'license_plate' in update_data:
-            vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id)})
-            if vehicle and vehicle['license_plate'] != update_data['license_plate']:
-                existing = db.vehicles.find_one({'license_plate': update_data['license_plate']})
-                if existing:
-                    return jsonify({'error': 'License plate already registered'}), 409
-
         db.vehicles.update_one(
             {'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)},
             {'$set': update_data}
         )
-        updated_vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id)})
-        return jsonify(vehicle_schema.dump(updated_vehicle)), 200
+        
+        # Recalculate predictions if mileage changed
+        if 'current_mileage' in update_data:
+            prediction_engine.calculate_predictions(ObjectId(vehicle_id))
 
+        return jsonify({'message': 'Vehicle updated successfully'}), 200
     except Exception as e:
         return jsonify({'error': str(e)}), 500
 
 # ---------------------------------------------------------
-# Get Specific Vehicle
+# UPDATE MILEAGE
 # ---------------------------------------------------------
+@vehicles_bp.route('/vehicles/<string:vehicle_id>/mileage', methods=['PUT'])
+def update_mileage(vehicle_id):
+    user_id = session.get('user_id')
+    if not user_id: return jsonify({'error': 'Unauthorized'}), 401
+    
+    data = request.get_json()
+    new_mileage = data.get('current_mileage')
+    
+    if new_mileage is None: return jsonify({'error': 'current_mileage required'}), 400
+    
+    try:
+        vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)})
+        if not vehicle: return jsonify({'error': 'Vehicle not found'}), 404
+        
+        # 1. Update Vehicle
+        db.vehicles.update_one(
+            {'_id': ObjectId(vehicle_id)},
+            {'$set': {
+                'current_mileage': int(new_mileage),
+                'last_mileage_update': datetime.utcnow()
+            }}
+        )
+
+        # 2. CREATE HISTORY RECORD (So it shows in the list)
+        db.servicerecords.insert_one({
+            "vehicle_id": ObjectId(vehicle_id),
+            "service_type": "odometer_update",
+            "service_date": datetime.utcnow(),
+            "mileage_at_service": int(new_mileage),
+            "cost": 0,
+            "notes": "Manual odometer update",
+            "created_at": datetime.utcnow(),
+            "created_by": ObjectId(user_id)
+        })
+        
+        # 3. Recalculate Predictions
+        prediction_engine.calculate_predictions(ObjectId(vehicle_id))
+
+        return jsonify({'message': 'Mileage updated'}), 200
+    except Exception as e:
+        return jsonify({'error': str(e)}), 500
+
 @vehicles_bp.route('/vehicles/<string:vehicle_id>', methods=['GET'])
 def get_vehicle(vehicle_id):
     user_id = session.get('user_id')
@@ -261,36 +206,13 @@ def get_vehicle(vehicle_id):
         vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)})
         if not vehicle: return jsonify({'error': 'Vehicle not found'}), 404
         return jsonify(vehicle_schema.dump(vehicle)), 200
-    except Exception: return jsonify({'error': 'Invalid vehicle ID'}), 400
+    except Exception: return jsonify({'error': 'Invalid ID'}), 400
 
-# ---------------------------------------------------------
-# Update Mileage
-# ---------------------------------------------------------
-@vehicles_bp.route('/vehicles/<string:vehicle_id>/mileage', methods=['PUT'])
-def update_mileage(vehicle_id):
-    user_id = session.get('user_id')
-    if not user_id: return jsonify({'error': 'Unauthorized'}), 401
-    json_data = request.get_json()
-    new_mileage = json_data.get('current_mileage')
-    if new_mileage is None: return jsonify({'error': 'current_mileage is required'}), 400
-    try:
-        vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)})
-        if not vehicle: return jsonify({'error': 'Vehicle not found'}), 404
-        if new_mileage <= vehicle['current_mileage']: return jsonify({'error': 'New mileage must be greater'}), 400
-        db.vehicles.update_one({'_id': ObjectId(vehicle_id)}, {'$set': {'current_mileage': new_mileage, 'last_mileage_update': datetime.utcnow()}})
-        return jsonify({'message': 'Mileage updated', 'vehicle': vehicle_schema.dump(db.vehicles.find_one({'_id': ObjectId(vehicle_id)}))}), 200
-    except Exception as e: return jsonify({'error': str(e)}), 500
-
-# ---------------------------------------------------------
-# Delete Vehicle
-# ---------------------------------------------------------
 @vehicles_bp.route('/vehicles/<string:vehicle_id>', methods=['DELETE'])
 def delete_vehicle(vehicle_id):
     user_id = session.get('user_id')
     if not user_id: return jsonify({'error': 'Unauthorized'}), 401
     try:
-        vehicle = db.vehicles.find_one({'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)})
-        if not vehicle: return jsonify({'error': 'Vehicle not found'}), 404
-        db.vehicles.update_one({'_id': ObjectId(vehicle_id)}, {'$set': {'is_active': False}})
-        return jsonify({'message': 'Vehicle deleted successfully'}), 200
-    except Exception: return jsonify({'error': 'Invalid vehicle ID'}), 400
+        db.vehicles.update_one({'_id': ObjectId(vehicle_id), 'user_id': ObjectId(user_id)}, {'$set': {'is_active': False}})
+        return jsonify({'message': 'Deleted'}), 200
+    except: return jsonify({'error': 'Failed'}), 500

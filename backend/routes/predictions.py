@@ -42,11 +42,6 @@ def get_predictions(vehicle_id):
         return jsonify({"error": str(e)}), 500
 
 
-# ---------------------------------------------------------
-# Route: Complete Prediction (Mark as Done)
-# Description: User clicks "Done" on a prediction card. 
-# Action: Creates a Service Record & Deactivates the Prediction.
-# ---------------------------------------------------------
 @predictions_bp.route('/predictions/<string:prediction_id>/complete', methods=['PUT'])
 def complete_prediction(prediction_id):
     user_id = session.get("user_id")
@@ -108,7 +103,6 @@ def cancel_prediction(prediction_id):
 
     try:
         # Verify and Deactivate
-        # (Simplified logic: ownership check + update in one query if you prefer, 
         
         prediction = db.maintenancepredictions.find_one({"_id": ObjectId(prediction_id)})
         if not prediction: return jsonify({"error": "Not found"}), 404

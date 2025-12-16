@@ -11,12 +11,9 @@ def find_nearby_workshops():
         latitude = request.args.get('lat', type=float)
         longitude = request.args.get('lng', type=float)
         
-        # CHANGED: Default radius is now 40,000 km (Earth's circumference)
-        # This effectively means "Unlimited"
         radius = request.args.get('radius', default=40000000, type=float) 
         service_filter = request.args.get('service', type=str)
 
-        # If we have coordinates, use geospatial query to sort by distance
         if latitude is not None and longitude is not None:
             query = {
                 "location": {
@@ -31,7 +28,6 @@ def find_nearby_workshops():
                 "is_active": True
             }
         else:
-            # Fallback: If no GPS provided, just return ALL active workshops
             query = {"is_active": True}
 
         if service_filter and service_filter != 'all':
@@ -98,4 +94,30 @@ def add_workshop():
 
     except Exception as e:
         print(f"Error adding workshop: {e}")
+        return jsonify({"error": str(e)}), 500
+
+# --- Route 3: Delete Workshop (ADMIN ONLY) ---
+@workshops_bp.route('/workshops/<string:workshop_id>', methods=['DELETE'])
+def delete_workshop(workshop_id):
+    user_id = session.get('user_id')
+    if not user_id:
+        return jsonify({"error": "Unauthorized"}), 401
+
+    try:
+        current_user = db.users.find_one({"_id": ObjectId(user_id)})
+        if not current_user or current_user.get('role') != 'admin':
+            return jsonify({"error": "Forbidden"}), 403
+
+        # Soft delete (set is_active to False)
+        result = db.workshops.update_one(
+            {"_id": ObjectId(workshop_id)},
+            {"$set": {"is_active": False}}
+        )
+
+        if result.modified_count == 0:
+            return jsonify({"error": "Workshop not found"}), 404
+
+        return jsonify({"message": "Workshop deleted"}), 200
+
+    except Exception as e:
         return jsonify({"error": str(e)}), 500

@@ -86,31 +86,17 @@ function updateMapMarkers(workshops) {
     markers = [];
 
     // --- NEW: USER LOCATION SHAPE (Blue Dot) ---
-    
-    // 1. The inner blue dot
     const userDot = L.circleMarker([userLat, userLng], {
-        radius: 8,
-        fillColor: "#2563eb",  // Bright Blue
-        color: "#ffffff",      // White Border
-        weight: 2,
-        opacity: 1,
-        fillOpacity: 1
+        radius: 8, fillColor: "#2563eb", color: "#ffffff", weight: 2, opacity: 1, fillOpacity: 1
     }).addTo(map);
     
-    // 2. The outer transparent halo (Accuracy circle)
     const userHalo = L.circleMarker([userLat, userLng], {
-        radius: 20,
-        fillColor: "#2563eb",
-        color: "transparent",
-        weight: 0,
-        fillOpacity: 0.2
+        radius: 20, fillColor: "#2563eb", color: "transparent", weight: 0, fillOpacity: 0.2
     }).addTo(map);
 
     userDot.bindPopup("<b>📍 You are here</b>");
-    
     markers.push(userDot);
     markers.push(userHalo);
-    // -------------------------------------------
 
     if(!workshops) return;
 
@@ -119,15 +105,51 @@ function updateMapMarkers(workshops) {
         if (w.location && w.location.coordinates) {
             const [lng, lat] = w.location.coordinates;
             const marker = L.marker([lat, lng]).addTo(map);
+            const googleMapsUrl = `https://www.google.com/maps/dir/?api=1&destination=${lat},${lng}`;
             
+            // --- ADMIN DELETE BUTTON ---
+            let deleteBtn = "";
+            if (typeof USER_ROLE !== 'undefined' && USER_ROLE === 'admin') {
+                deleteBtn = `
+                    <button onclick="deleteWorkshop('${w.id}')" 
+                        style="display: block; width: 100%; background: #ff4757; color: white; border: none; margin-top: 8px; padding: 6px; border-radius: 6px; cursor: pointer; font-size: 12px;">
+                        🗑️ Delete Workshop
+                    </button>
+                `;
+            }
+            // ---------------------------
+
             marker.bindPopup(`
-                <b>${w.name}</b><br>
-                ${w.address}<br>
-                ⭐ ${w.rating}
+                <div style="min-width: 180px; text-align: center;">
+                    <h3 style="margin: 0 0 5px; font-size: 16px; font-weight: 700;">${w.name}</h3>
+                    <p style="margin: 0 0 8px; color: #555; font-size: 13px;">${w.address}</p>
+                    <div style="margin-bottom: 10px; color: #f59e0b; font-weight: bold;">⭐ ${w.rating}</div>
+                    
+                    <a href="${googleMapsUrl}" target="_blank" 
+                       style="display: inline-block; background: #007aff; color: white; text-decoration: none; padding: 8px 16px; border-radius: 20px; font-size: 13px; font-weight: 600; box-shadow: 0 2px 5px rgba(0,0,0,0.2);">
+                       🗺️ Get Directions
+                    </a>
+                    ${deleteBtn}
+                </div>
             `);
             markers.push(marker);
         }
     });
+}
+
+// --- NEW: Delete Workshop Function ---
+async function deleteWorkshop(id) {
+    if(!confirm("Are you sure you want to delete this workshop?")) return;
+    
+    try {
+        const res = await fetch(`${API_BASE_URL}/api/workshops/${id}`, { method: 'DELETE' });
+        if(res.ok) {
+            alert("Workshop deleted.");
+            fetchWorkshops(); // Refresh map
+        } else {
+            alert("Failed to delete.");
+        }
+    } catch(e) { console.error(e); }
 }
 
 // --- 4. Update Sidebar ---
@@ -153,6 +175,7 @@ function updateSidebarList(workshops) {
              if (w.location && w.location.coordinates) {
                 const [lng, lat] = w.location.coordinates;
                 map.setView([lat, lng], 16);
+                // Optionally open the popup of the matching marker
              }
         });
 
