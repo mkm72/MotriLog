@@ -1,7 +1,7 @@
 # MotariLog
 
 MotariLog is a smart vehicle maintenance tracker that helps users monitor service history, predict maintenance needs, and locate nearby workshops.
-tis was a project for a Software Engineering (SWE) course.
+this was project for a Software Engineering (SWE) course.
 
 ## System Requirements
 
