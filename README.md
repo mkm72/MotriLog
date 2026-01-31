@@ -1,6 +1,7 @@
 # MotariLog
 
 MotariLog is a smart vehicle maintenance tracker that helps users monitor service history, predict maintenance needs, and locate nearby workshops.
+this was project for a Software Engineering (SWE) course.
 
 ## System Requirements
 
@@ -78,9 +79,7 @@ Use this if you want to edit Python code and see changes without rebuilding Dock
     python run.py
     ```
     The application will start in debug mode at `http://127.0.0.1:5000`.
-
----
-
+    
 ## Admin Access & Workshop Management
 
 The system automatically creates a default administrator account on the first launch. This account has exclusive access to manage workshop locations on the map.
